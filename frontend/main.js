@@ -377,10 +377,10 @@ async function openInstallerWizard() {
         </div>
       </div>
       <div class="modal-footer">
-        <button id="wizard-back" style="display: none;">Back</button>
-        <button id="wizard-next">Next</button>
-        <button id="wizard-install" style="display: none;" class="btn-primary">Install</button>
-        <button id="wizard-cancel">Cancel</button>
+        <button id="wizard-back" class="btn-secondary" style="display: none;">Back</button>
+        <button id="wizard-next" class="btn-primary">Next</button>
+        <button id="wizard-install" class="btn-primary" style="display: none;">Install</button>
+        <button id="wizard-cancel" class="btn-secondary">Cancel</button>
       </div>
     </div>
   `
@@ -621,14 +621,14 @@ async function openSpecsManagementWindow() {
             <input type="text" id="specs-search" placeholder="Search specs..." />
           </div>
           <div class="toolbar-filters">
-            <select id="phase-filter">
+            <select id="phase-filter" class="p-2 bg-app-card border border-app-outline rounded-lg text-app-text text-sm">
               <option value="">All Phases</option>
               <option value="Phase 1">Phase 1</option>
               <option value="Phase 2">Phase 2</option>
               <option value="Phase 3">Phase 3</option>
               <option value="Phase 4">Phase 4</option>
             </select>
-            <select id="status-filter">
+            <select id="status-filter" class="p-2 bg-app-card border border-app-outline rounded-lg text-app-text text-sm">
               <option value="">All Status</option>
               <option value="completed">Completed</option>
               <option value="in_progress">In Progress</option>
@@ -1239,12 +1239,7 @@ function attachQuickActionHandlers(spec) {
     const createSpecBtn = document.querySelector('.quick-action-btn.create-spec')
     if (createSpecBtn) {
       createSpecBtn.addEventListener('click', () => {
-        // Open create spec dialog
-        const specName = prompt('Enter new spec name:')
-        if (specName) {
-          // This would call /sdd-create-spec command
-          alert(`Creating spec: ${specName}\n(This would normally call /sdd-create-spec)`)
-        }
+        openCreateSpecDialog(spec)
       })
     }
     
@@ -1262,13 +1257,28 @@ function attachQuickActionHandlers(spec) {
             throw new Error('Tauri API not available');
           }
           
-          // Run analysis command
-          const analysisResult = await invoke('analyze_spec', { specPath: spec.path })
+          // Set button loading state
+          runAnalysisBtn.disabled = true
+          const originalText = runAnalysisBtn.innerHTML
+          runAnalysisBtn.innerHTML = '<span class="action-icon">⏳</span><span class="action-label">Analyzing...</span>'
+          
+          // Run analysis command - need to pass the tasks.json path
+          const tasksPath = spec.path + '/tasks.json'
+          const analysisResult = await invoke('analyze_spec', { specPath: tasksPath })
+          
+          // Reset button state
+          runAnalysisBtn.disabled = false
+          runAnalysisBtn.innerHTML = originalText
           
           // Display results in a modal
           displayAnalysisResults(spec, analysisResult)
         } catch (error) {
           console.error('Failed to run analysis:', error)
+          
+          // Reset button state
+          runAnalysisBtn.disabled = false
+          runAnalysisBtn.innerHTML = originalText
+          
           alert('Failed to run spec analysis. Please check the console for details.')
         }
       })
@@ -1338,10 +1348,7 @@ function displayAnalysisResults(spec, results) {
         <button class="modal-close">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="analysis-results">
-          <h4>Spec Analysis</h4>
-          <pre>${escapeHtml(JSON.stringify(results, null, 2))}</pre>
-        </div>
+        <div class="text-display markdown">${renderBasicMarkdown(results)}</div>
       </div>
     </div>
   `
@@ -1360,6 +1367,142 @@ function displayAnalysisResults(spec, results) {
     }
   }
   document.addEventListener('keydown', handleEscKey)
+}
+
+function openCreateSpecDialog(currentSpec) {
+  // Create spec creation modal
+  const existing = document.getElementById('create-spec-modal')
+  if (existing) existing.remove()
+  
+  const modal = document.createElement('div')
+  modal.id = 'create-spec-modal'
+  modal.className = 'create-spec-modal'
+  modal.innerHTML = `
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Create New Spec</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="spec-name-input">Spec Name:</label>
+          <input type="text" id="spec-name-input" placeholder="Enter spec name (e.g., User Authentication)" />
+        </div>
+        <div class="form-group">
+          <label for="spec-description-input">Description:</label>
+          <textarea id="spec-description-input" placeholder="Brief description of what this spec will accomplish" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="lite-mode-checkbox" />
+            Lite mode (minimal template)
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="create-spec-btn" class="btn-primary">Create Spec</button>
+        <button id="cancel-spec-btn" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+  `
+  document.body.appendChild(modal)
+  
+  // Close handlers
+  const closeModal = () => modal.remove()
+  modal.querySelector('.modal-backdrop').addEventListener('click', closeModal)
+  modal.querySelector('.modal-close').addEventListener('click', closeModal)
+  modal.querySelector('#cancel-spec-btn').addEventListener('click', closeModal)
+  
+  // ESC key handler
+  const handleEscKey = (e) => {
+    if (e.key === 'Escape' || e.keyCode === 27) {
+      closeModal()
+      document.removeEventListener('keydown', handleEscKey)
+    }
+  }
+  document.addEventListener('keydown', handleEscKey)
+  
+  // Focus the name input
+  setTimeout(() => {
+    document.getElementById('spec-name-input').focus()
+  }, 100)
+  
+  // Create spec handler
+  document.getElementById('create-spec-btn').addEventListener('click', async () => {
+    const specName = document.getElementById('spec-name-input').value.trim()
+    const description = document.getElementById('spec-description-input').value.trim()
+    const liteMode = document.getElementById('lite-mode-checkbox').checked
+    
+    if (!specName) {
+      alert('Please enter a spec name')
+      return
+    }
+    
+    if (!description) {
+      alert('Please enter a description')
+      return
+    }
+    
+    try {
+      // Get invoke from global scope
+      if (!invoke && window.__TAURI__ && window.__TAURI__.core) {
+        invoke = window.__TAURI__.core.invoke;
+      }
+      
+      if (!invoke) {
+        throw new Error('Tauri API not available');
+      }
+      
+      // Get current project path
+      const projectSelect = document.getElementById('projectsSelect')
+      if (!projectSelect || !projectSelect.value) {
+        throw new Error('No project selected');
+      }
+      
+      const projectPath = projectSelect.value
+      
+      // Disable button and show loading
+      const createBtn = document.getElementById('create-spec-btn')
+      createBtn.disabled = true
+      createBtn.textContent = 'Creating...'
+      
+      // Call create_spec command
+      const result = await invoke('create_spec', {
+        projectPath,
+        specName,
+        description,
+        liteMode
+      })
+      
+      // Show success message using the existing analysis results modal
+      displayAnalysisResults({feature: 'New Spec Created'}, `✅ ${result}\n\nThe new spec has been created and is ready for development.`)
+      
+      // Close the dialog
+      closeModal()
+      
+      // Refresh the specs list if we're in the specs management window
+      const specsModal = document.getElementById('specs-management-modal')
+      if (specsModal) {
+        // Reload specs data
+        const sortState = {
+          column: 'modified',
+          direction: 'desc',
+          data: []
+        }
+        await loadSpecsData(sortState)
+      }
+      
+    } catch (error) {
+      console.error('Failed to create spec:', error)
+      alert(`Failed to create spec: ${error.message}`)
+      
+      // Re-enable button
+      const createBtn = document.getElementById('create-spec-btn')
+      createBtn.disabled = false
+      createBtn.textContent = 'Create Spec'
+    }
+  })
 }
 
 // Export for use in shared.js
