@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob: tauri: ipc:; connect-src * tauri: ipc:; script-src * 'unsafe-inline' 'unsafe-eval' tauri:; style-src * 'unsafe-inline'">
   <title>Agent SDD Dashboard</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -12,6 +13,9 @@
     <div class="actions">
       <button id="btnChooseBase">Choose Base Directory</button>
       <button id="btnRefresh" disabled>Refresh</button>
+      <button id="btnSpecsManagement">Specs Management</button>
+      <button id="btnInstaller">Install Agent-SDD</button>
+      <button id="btnTest">Test API</button>
     </div>
   </header>
 

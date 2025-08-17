@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Set up file click handlers (will be added after text display component)
   setupFileClickHandlers()
+  
+  // Set up specs management window
+  setupSpecsManagementWindow()
 })
 
 function setupFileClickHandlers() {
@@ -289,5 +292,114 @@ function escapeHtml(text) {
   return div.innerHTML
 }
 
+function setupSpecsManagementWindow() {
+  const specsBtn = document.getElementById('btnSpecsManagement')
+  if (specsBtn) {
+    specsBtn.addEventListener('click', openSpecsManagementWindow)
+  }
+}
+
+async function openSpecsManagementWindow() {
+  // Create specs management window modal
+  const existing = document.getElementById('specs-management-modal')
+  if (existing) existing.remove()
+  
+  const modal = document.createElement('div')
+  modal.id = 'specs-management-modal'
+  modal.className = 'specs-management-modal'
+  modal.innerHTML = `
+    <div class="modal-backdrop"></div>
+    <div class="modal-content specs-management-content">
+      <div class="modal-header">
+        <h3>Specs Management</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body specs-management-body">
+        <div class="specs-toolbar">
+          <div class="toolbar-search">
+            <input type="text" id="specs-search" placeholder="Search specs..." />
+          </div>
+          <div class="toolbar-filters">
+            <select id="phase-filter">
+              <option value="">All Phases</option>
+              <option value="Phase 1">Phase 1</option>
+              <option value="Phase 2">Phase 2</option>
+              <option value="Phase 3">Phase 3</option>
+              <option value="Phase 4">Phase 4</option>
+            </select>
+            <select id="status-filter">
+              <option value="">All Status</option>
+              <option value="completed">Completed</option>
+              <option value="in_progress">In Progress</option>
+              <option value="pending">Not Started</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="specs-layout">
+          <div class="specs-table-container">
+            <table class="specs-table">
+              <thead>
+                <tr>
+                  <th class="sortable" data-column="status">Status</th>
+                  <th class="sortable" data-column="feature">Feature</th>
+                  <th class="sortable" data-column="phase">Phase</th>
+                  <th class="sortable" data-column="date">Date</th>
+                  <th class="sortable" data-column="progress">Progress</th>
+                  <th class="sortable" data-column="effort">Size</th>
+                  <th class="sortable" data-column="modified">Modified</th>
+                </tr>
+              </thead>
+              <tbody id="specs-table-body">
+                <tr>
+                  <td colspan="7" class="loading-row">Loading specs...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="specs-details-panel">
+            <div class="details-placeholder">
+              <div class="placeholder-icon">📋</div>
+              <div class="placeholder-text">Select a spec to view details</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+  document.body.appendChild(modal)
+  
+  // Close handlers
+  const closeModal = () => modal.remove()
+  modal.querySelector('.modal-backdrop').addEventListener('click', closeModal)
+  modal.querySelector('.modal-close').addEventListener('click', closeModal)
+  
+  // ESC key handler
+  const handleEscKey = (e) => {
+    if (e.key === 'Escape' || e.keyCode === 27) {
+      closeModal()
+      document.removeEventListener('keydown', handleEscKey)
+    }
+  }
+  document.addEventListener('keydown', handleEscKey)
+  
+  // Load specs data (placeholder for now)
+  await loadSpecsData()
+}
+
+async function loadSpecsData() {
+  // Placeholder function - will be implemented in SMW-002
+  const tableBody = document.getElementById('specs-table-body')
+  if (tableBody) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="7" class="no-specs">No specs found. Backend integration pending.</td>
+      </tr>
+    `
+  }
+}
+
 // Export for use in shared.js
 window.openFilePreview = openFilePreview
+window.openSpecsManagementWindow = openSpecsManagementWindow
