@@ -1006,6 +1006,10 @@ function renderSpecDetailsPanel(spec) {
       <!-- Progress Section -->
       <div class="spec-progress-section">
         <h4 class="section-title">Task Progress</h4>
+        
+        <!-- Task Progress Indicator Component -->
+        ${createTaskProgressIndicator(spec.tasks)}
+        
         <div class="progress-metrics">
           <div class="progress-metric">
             <div class="progress-metric-header">
@@ -1057,7 +1061,7 @@ function renderTaskStatusGroup(title, tasks, status) {
         ${tasks.map(task => `
           <div class="task-item ${status}">
             <div class="task-item-header">
-              <span class="task-status-icon">${getTaskStatusIcon(task.status)}</span>
+              <span class="task-status-icon" title="${escapeHtml(task.status.replace('_', ' ').toUpperCase())}">${getTaskStatusIcon(task.status)}</span>
               <span class="task-name">${escapeHtml(task.name)}</span>
               <span class="task-effort effort-badge">${escapeHtml(task.effort)}</span>
             </div>
@@ -1083,8 +1087,79 @@ function getTaskStatusIcon(status) {
     case 'completed': return '✅'
     case 'in_progress': return '⏳'
     case 'pending': return '⭕'
+    case 'blocked': return '❌'
+    case 'cancelled': return '🚫'
     default: return '❓'
   }
+}
+
+function createTaskProgressIndicator(tasks) {
+  const statusCounts = {
+    completed: 0,
+    in_progress: 0,
+    pending: 0,
+    blocked: 0,
+    cancelled: 0
+  }
+  
+  tasks.forEach(task => {
+    if (statusCounts.hasOwnProperty(task.status)) {
+      statusCounts[task.status]++
+    }
+  })
+  
+  const total = tasks.length
+  const completedPercent = total > 0 ? Math.round((statusCounts.completed / total) * 100) : 0
+  const inProgressPercent = total > 0 ? Math.round((statusCounts.in_progress / total) * 100) : 0
+  const pendingPercent = total > 0 ? Math.round((statusCounts.pending / total) * 100) : 0
+  const blockedPercent = total > 0 ? Math.round((statusCounts.blocked / total) * 100) : 0
+  
+  return `
+    <div class="task-progress-indicator">
+      <div class="progress-indicator-header">
+        <span class="indicator-title">Task Status Overview</span>
+        <span class="indicator-summary">${statusCounts.completed} of ${total} completed</span>
+      </div>
+      
+      <div class="progress-indicator-bar">
+        ${statusCounts.completed > 0 ? `<div class="progress-segment completed" style="width: ${completedPercent}%" title="Completed: ${statusCounts.completed}"></div>` : ''}
+        ${statusCounts.in_progress > 0 ? `<div class="progress-segment in-progress" style="width: ${inProgressPercent}%" title="In Progress: ${statusCounts.in_progress}"></div>` : ''}
+        ${statusCounts.pending > 0 ? `<div class="progress-segment pending" style="width: ${pendingPercent}%" title="Pending: ${statusCounts.pending}"></div>` : ''}
+        ${statusCounts.blocked > 0 ? `<div class="progress-segment blocked" style="width: ${blockedPercent}%" title="Blocked: ${statusCounts.blocked}"></div>` : ''}
+      </div>
+      
+      <div class="progress-indicator-legend">
+        ${statusCounts.completed > 0 ? `
+          <div class="legend-item">
+            <span class="legend-icon">✅</span>
+            <span class="legend-label">Completed</span>
+            <span class="legend-count">${statusCounts.completed}</span>
+          </div>
+        ` : ''}
+        ${statusCounts.in_progress > 0 ? `
+          <div class="legend-item">
+            <span class="legend-icon">⏳</span>
+            <span class="legend-label">In Progress</span>
+            <span class="legend-count">${statusCounts.in_progress}</span>
+          </div>
+        ` : ''}
+        ${statusCounts.pending > 0 ? `
+          <div class="legend-item">
+            <span class="legend-icon">⭕</span>
+            <span class="legend-label">Pending</span>
+            <span class="legend-count">${statusCounts.pending}</span>
+          </div>
+        ` : ''}
+        ${statusCounts.blocked > 0 ? `
+          <div class="legend-item">
+            <span class="legend-icon">❌</span>
+            <span class="legend-label">Blocked</span>
+            <span class="legend-count">${statusCounts.blocked}</span>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `
 }
 
 // Export for use in shared.js
