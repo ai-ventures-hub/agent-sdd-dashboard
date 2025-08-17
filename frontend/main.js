@@ -685,11 +685,170 @@ async function openSpecsManagementWindow() {
   }
   document.addEventListener('keydown', handleEscKey)
   
-  // Load specs data (placeholder for now)
-  await loadSpecsData()
+  // Initialize sorting state
+  let sortState = {
+    column: 'modified',
+    direction: 'desc',
+    data: []
+  }
+  
+  // Add table sorting handlers
+  setupTableSorting(sortState)
+  
+  // Load specs data
+  await loadSpecsData(sortState)
 }
 
-async function loadSpecsData() {
+function setupTableSorting(sortState) {
+  const tableHeaders = document.querySelectorAll('.specs-table th.sortable')
+  
+  tableHeaders.forEach(header => {
+    header.addEventListener('click', () => {
+      const column = header.dataset.column
+      
+      // Toggle direction if same column, otherwise default to asc
+      if (sortState.column === column) {
+        sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc'
+      } else {
+        sortState.column = column
+        sortState.direction = 'asc'
+      }
+      
+      // Update header indicators
+      updateSortIndicators(sortState)
+      
+      // Re-sort and re-render table
+      renderSortedSpecs(sortState)
+    })
+  })
+  
+  // Set initial sort indicator
+  updateSortIndicators(sortState)
+}
+
+function updateSortIndicators(sortState) {
+  const tableHeaders = document.querySelectorAll('.specs-table th.sortable')
+  
+  tableHeaders.forEach(header => {
+    const column = header.dataset.column
+    
+    // Remove existing indicators
+    header.classList.remove('sort-asc', 'sort-desc')
+    
+    // Add indicator for current sort column
+    if (column === sortState.column) {
+      header.classList.add(sortState.direction === 'asc' ? 'sort-asc' : 'sort-desc')
+    }
+  })
+}
+
+function sortSpecs(specs, column, direction) {
+  return [...specs].sort((a, b) => {
+    let aVal, bVal
+    
+    switch (column) {
+      case 'status':
+        const statusOrder = { 'completed': 3, 'in_progress': 2, 'pending': 1 }
+        aVal = statusOrder[a.status] || 0
+        bVal = statusOrder[b.status] || 0
+        break
+      case 'feature':
+        aVal = a.feature.toLowerCase()
+        bVal = b.feature.toLowerCase()
+        break
+      case 'phase':
+        aVal = a.phase.toLowerCase()
+        bVal = b.phase.toLowerCase()
+        break
+      case 'date':
+        aVal = new Date(a.created)
+        bVal = new Date(b.created)
+        break
+      case 'progress':
+        aVal = a.task_count > 0 ? (a.completed_tasks / a.task_count) : 0
+        bVal = b.task_count > 0 ? (b.completed_tasks / b.task_count) : 0
+        break
+      case 'effort':
+        const getEffortTotal = (spec) => spec.tasks.reduce((total, task) => total + getEffortValue(task.effort), 0)
+        aVal = getEffortTotal(a)
+        bVal = getEffortTotal(b)
+        break
+      case 'modified':
+        aVal = a.last_modified ? new Date(a.last_modified) : new Date(0)
+        bVal = b.last_modified ? new Date(b.last_modified) : new Date(0)
+        break
+      default:
+        aVal = a[column] || ''
+        bVal = b[column] || ''
+    }
+    
+    // Handle comparison based on data type
+    if (aVal instanceof Date && bVal instanceof Date) {
+      return direction === 'asc' ? aVal - bVal : bVal - aVal
+    } else if (typeof aVal === 'number' && typeof bVal === 'number') {
+      return direction === 'asc' ? aVal - bVal : bVal - aVal
+    } else {
+      const strA = String(aVal)
+      const strB = String(bVal)
+      return direction === 'asc' ? strA.localeCompare(strB) : strB.localeCompare(strA)
+    }
+  })
+}
+
+function renderSortedSpecs(sortState) {
+  const tableBody = document.getElementById('specs-table-body')
+  if (!tableBody || !sortState.data.length) return
+  
+  const sortedSpecs = sortSpecs(sortState.data, sortState.column, sortState.direction)
+  
+  // Clear existing rows
+  tableBody.innerHTML = ''
+  
+  // Remember currently selected spec
+  const selectedSpec = document.querySelector('.specs-table tbody tr.selected')?.dataset.specId
+  
+  // Render sorted rows
+  sortedSpecs.forEach(spec => {
+    const row = document.createElement('tr')
+    row.dataset.specId = spec.id
+    
+    // Restore selection if this was the selected row
+    if (selectedSpec === spec.id) {
+      row.classList.add('selected')
+    }
+    
+    row.addEventListener('click', () => selectSpecRow(row, spec))
+    
+    const progressPercent = spec.task_count > 0 
+      ? Math.round((spec.completed_tasks / spec.task_count) * 100) 
+      : 0
+    
+    const statusIcon = getStatusIcon(spec.status)
+    const effortDisplay = spec.tasks.reduce((total, task) => {
+      const effort = getEffortValue(task.effort)
+      return total + effort
+    }, 0)
+    const effortLabel = getEffortLabel(effortDisplay)
+    
+    const modifiedDate = spec.last_modified 
+      ? new Date(spec.last_modified).toLocaleDateString()
+      : 'Unknown'
+    
+    row.innerHTML = `
+      <td><span class="status-icon">${statusIcon}</span></td>
+      <td>${escapeHtml(spec.feature)}</td>
+      <td>${escapeHtml(spec.phase)}</td>
+      <td class="date-text">${escapeHtml(spec.created)}</td>
+      <td class="progress-text">${progressPercent}% (${spec.completed_tasks}/${spec.task_count})</td>
+      <td><span class="effort-badge">${effortLabel}</span></td>
+      <td class="date-text">${modifiedDate}</td>
+    `
+    
+    tableBody.appendChild(row)
+  })
+}
+
+async function loadSpecsData(sortState) {
   const tableBody = document.getElementById('specs-table-body')
   if (!tableBody) return
   
@@ -728,41 +887,9 @@ async function loadSpecsData() {
       return
     }
     
-    // Clear table and populate with specs data
-    tableBody.innerHTML = ''
-    
-    specs.forEach(spec => {
-      const row = document.createElement('tr')
-      row.dataset.specId = spec.id
-      row.addEventListener('click', () => selectSpecRow(row, spec))
-      
-      const progressPercent = spec.task_count > 0 
-        ? Math.round((spec.completed_tasks / spec.task_count) * 100) 
-        : 0
-      
-      const statusIcon = getStatusIcon(spec.status)
-      const effortDisplay = spec.tasks.reduce((total, task) => {
-        const effort = getEffortValue(task.effort)
-        return total + effort
-      }, 0)
-      const effortLabel = getEffortLabel(effortDisplay)
-      
-      const modifiedDate = spec.last_modified 
-        ? new Date(spec.last_modified).toLocaleDateString()
-        : 'Unknown'
-      
-      row.innerHTML = `
-        <td><span class="status-icon">${statusIcon}</span></td>
-        <td>${escapeHtml(spec.feature)}</td>
-        <td>${escapeHtml(spec.phase)}</td>
-        <td class="date-text">${escapeHtml(spec.created)}</td>
-        <td class="progress-text">${progressPercent}% (${spec.completed_tasks}/${spec.task_count})</td>
-        <td><span class="effort-badge">${effortLabel}</span></td>
-        <td class="date-text">${modifiedDate}</td>
-      `
-      
-      tableBody.appendChild(row)
-    })
+    // Store data in sort state and render sorted
+    sortState.data = specs
+    renderSortedSpecs(sortState)
     
   } catch (error) {
     console.error('Failed to load specs:', error)
