@@ -51,6 +51,30 @@
       "files_modified": ["frontend/shared.js"],
       "created": "2025-08-17",
       "completed": "2025-08-17"
+    },
+    {
+      "id": "fix-modal-components",
+      "name": "Ensure all modals use Tailwind modal components",
+      "description": "Make sure all modals or popups are using tailwind modal component",
+      "status": "completed",
+      "effort": "S",
+      "dependencies": [],
+      "ux_ui_reviewed": true,
+      "files_modified": ["frontend/main.js"],
+      "created": "2025-08-17",
+      "completed": "2025-08-17"
+    },
+    {
+      "id": "fix-modal-positioning",
+      "name": "Fix modal positioning to display as proper overlay",
+      "description": "The tailwind modal triggers but not as a tailwind modal. The modal is placed below the whatever content is above it",
+      "status": "completed",
+      "effort": "XS",
+      "dependencies": [],
+      "ux_ui_reviewed": true,
+      "files_modified": ["frontend/main.js", "frontend/dist/styles.css"],
+      "created": "2025-08-17",
+      "completed": "2025-08-17"
     }
   ]
 }

@@ -3,11 +3,22 @@
     "id": "task-001",
     "title": "Replace Size status with copyable task ID in specs management window",
     "description": "In the specs management window under 'Task Breakdown', replace the 'Size' status in the upper right with the task ID and add a small copy icon next to it. When clicked, it should copy the task ID to clipboard.",
-    "status": "In Progress",
+    "status": "Done",
     "priority": "Medium",
     "estimate": "Small",
     "assignee": "Claude",
     "created_date": "2025-08-17",
-    "ux_ui_reviewed": false
+    "ux_ui_reviewed": true
+  },
+  {
+    "id": "task-002",
+    "title": "Replace emoji with lucide icon in Specs Management Table Status column",
+    "description": "In the Specs Management Table, replace the emoji in the Status column with the equivalent lucide icon",
+    "status": "Done",
+    "priority": "Medium",
+    "estimate": "Small",
+    "assignee": "Claude",
+    "created_date": "2025-08-17",
+    "ux_ui_reviewed": true
   }
 ]

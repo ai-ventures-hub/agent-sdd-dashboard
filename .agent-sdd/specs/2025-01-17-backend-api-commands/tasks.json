@@ -1,7 +1,7 @@
 {
   "phase": "Phase 2",
   "feature": "Backend API Commands",
-  "status": "pending",
+  "status": "completed",
   "created": "2025-01-17",
   "tasks": [
     {
@@ -27,7 +27,7 @@
       "id": "BAC-003",
       "name": "Implement list_child_directories",
       "description": "List subdirectories in select field with filtering",
-      "status": "Done",
+      "status": "completed",
       "completed": "2025-08-17",
       "dependencies": ["BAC-001"],
       "effort": "S",
@@ -37,7 +37,7 @@
       "id": "BAC-004",
       "name": "Implement scan_project",
       "description": "Scan .agent-sdd structure and collect stats",
-      "status": "pending",
+      "status": "completed",
       "dependencies": ["BAC-001"],
       "effort": "M"
     },
@@ -45,7 +45,7 @@
       "id": "BAC-005",
       "name": "Implement read_file",
       "description": "Safe file reading with size limits",
-      "status": "pending",
+      "status": "completed",
       "dependencies": ["BAC-001"],
       "effort": "S"
     },
@@ -53,7 +53,7 @@
       "id": "BAC-006",
       "name": "Add error handling",
       "description": "Comprehensive error types and messages",
-      "status": "pending",
+      "status": "completed",
       "dependencies": ["BAC-002", "BAC-003", "BAC-004", "BAC-005"],
       "effort": "S"
     },
@@ -61,7 +61,7 @@
       "id": "BAC-007",
       "name": "Frontend API integration",
       "description": "Connect JavaScript to Tauri commands",
-      "status": "pending",
+      "status": "completed",
       "dependencies": ["BAC-002", "BAC-003", "BAC-004", "BAC-005"],
       "effort": "S"
     },
@@ -69,7 +69,7 @@
       "id": "BAC-008",
       "name": "Test all workflows",
       "description": "End-to-end testing of all user flows",
-      "status": "pending",
+      "status": "completed",
       "dependencies": ["BAC-007"],
       "effort": "S"
     }

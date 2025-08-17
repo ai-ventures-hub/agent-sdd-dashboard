@@ -571,3 +571,292 @@ pub async fn create_agent_sdd_structure(project_path: String, config: ProjectCon
     
     Ok("Agent-SDD structure created successfully".to_string())
 }
+
+#[tauri::command]
+pub async fn create_spec(project_path: String, spec_name: String, description: String, lite_mode: bool) -> Result<String, String> {
+    let project_dir = Path::new(&project_path);
+    let specs_dir = project_dir.join(".agent-sdd").join("specs");
+    
+    if !specs_dir.exists() {
+        fs::create_dir_all(&specs_dir)
+            .map_err(|e| format!("Failed to create specs directory: {}", e))?;
+    }
+    
+    // Generate directory name with current date
+    let date_str = chrono::Utc::now().format("%Y-%m-%d");
+    let kebab_name = spec_name.to_lowercase()
+        .split_whitespace()
+        .take(5)
+        .collect::<Vec<_>>()
+        .join("-")
+        .chars()
+        .filter(|c| c.is_alphanumeric() || *c == '-')
+        .collect::<String>();
+    
+    let spec_dir_name = format!("{}-{}", date_str, kebab_name);
+    let spec_dir = specs_dir.join(&spec_dir_name);
+    
+    if spec_dir.exists() {
+        return Err("A spec with this name already exists for today".to_string());
+    }
+    
+    fs::create_dir(&spec_dir)
+        .map_err(|e| format!("Failed to create spec directory: {}", e))?;
+    
+    // Create SDD markdown file
+    let sdd_content = if lite_mode {
+        create_lite_sdd_content(&spec_name, &description)
+    } else {
+        create_full_sdd_content(&spec_name, &description)
+    };
+    
+    let sdd_file = spec_dir.join("sdd.md");
+    fs::write(&sdd_file, sdd_content)
+        .map_err(|e| format!("Failed to create SDD file: {}", e))?;
+    
+    // Create tasks.json
+    let tasks_content = create_tasks_json(&spec_name, &date_str.to_string());
+    let tasks_file = spec_dir.join("tasks.json");
+    fs::write(&tasks_file, tasks_content)
+        .map_err(|e| format!("Failed to create tasks file: {}", e))?;
+    
+    Ok(format!("Spec '{}' created successfully at {}", spec_name, spec_dir.to_string_lossy()))
+}
+
+#[tauri::command]
+pub async fn analyze_spec(spec_path: String) -> Result<String, String> {
+    let spec_dir = Path::new(&spec_path).parent()
+        .ok_or("Invalid spec path")?;
+    let project_dir = spec_dir.ancestors()
+        .find(|p| p.join(".agent-sdd").exists())
+        .ok_or("Could not find project root with .agent-sdd")?;
+    
+    let mut analysis = String::new();
+    analysis.push_str("# Spec Analysis Results\n\n");
+    
+    // Read and analyze the tasks.json
+    let tasks_file = Path::new(&spec_path);
+    if !tasks_file.exists() {
+        return Err("tasks.json not found".to_string());
+    }
+    
+    let tasks_content = fs::read_to_string(&tasks_file)
+        .map_err(|e| format!("Failed to read tasks.json: {}", e))?;
+    
+    let tasks_json: serde_json::Value = serde_json::from_str(&tasks_content)
+        .map_err(|e| format!("Failed to parse tasks.json: {}", e))?;
+    
+    // Extract basic info
+    let feature = tasks_json["feature"].as_str().unwrap_or("Unknown");
+    let phase = tasks_json["phase"].as_str().unwrap_or("Unknown");
+    let status = tasks_json["status"].as_str().unwrap_or("Unknown");
+    
+    analysis.push_str(&format!("## Spec Overview\n"));
+    analysis.push_str(&format!("- **Feature:** {}\n", feature));
+    analysis.push_str(&format!("- **Phase:** {}\n", phase));
+    analysis.push_str(&format!("- **Status:** {}\n", status));
+    analysis.push_str("\n");
+    
+    // Analyze tasks
+    if let Some(tasks_array) = tasks_json["tasks"].as_array() {
+        let total_tasks = tasks_array.len();
+        let completed_tasks = tasks_array.iter()
+            .filter(|task| task["status"].as_str() == Some("completed"))
+            .count();
+        let in_progress_tasks = tasks_array.iter()
+            .filter(|task| task["status"].as_str() == Some("in_progress"))
+            .count();
+        let pending_tasks = tasks_array.iter()
+            .filter(|task| task["status"].as_str() == Some("pending"))
+            .count();
+        
+        analysis.push_str("## Task Progress\n");
+        analysis.push_str(&format!("- **Total Tasks:** {}\n", total_tasks));
+        analysis.push_str(&format!("- **Completed:** {} ({:.1}%)\n", completed_tasks, 
+            if total_tasks > 0 { (completed_tasks as f32 / total_tasks as f32) * 100.0 } else { 0.0 }));
+        analysis.push_str(&format!("- **In Progress:** {}\n", in_progress_tasks));
+        analysis.push_str(&format!("- **Pending:** {}\n", pending_tasks));
+        analysis.push_str("\n");
+        
+        // Show next task
+        if let Some(next_task) = tasks_array.iter()
+            .find(|task| task["status"].as_str() == Some("pending") || task["status"].as_str() == Some("in_progress")) {
+            analysis.push_str("## Next Task\n");
+            analysis.push_str(&format!("- **ID:** {}\n", next_task["id"].as_str().unwrap_or("N/A")));
+            analysis.push_str(&format!("- **Name:** {}\n", next_task["name"].as_str().unwrap_or("N/A")));
+            analysis.push_str(&format!("- **Description:** {}\n", next_task["description"].as_str().unwrap_or("N/A")));
+            analysis.push_str(&format!("- **Effort:** {}\n", next_task["effort"].as_str().unwrap_or("N/A")));
+            analysis.push_str("\n");
+        }
+    }
+    
+    // Check roadmap alignment
+    let roadmap_file = project_dir.join(".agent-sdd").join("product").join("roadmap.md");
+    if roadmap_file.exists() {
+        analysis.push_str("## Roadmap Alignment\n");
+        analysis.push_str("✅ Spec is part of tracked project roadmap\n\n");
+    } else {
+        analysis.push_str("## Roadmap Alignment\n");
+        analysis.push_str("⚠️ No roadmap.md found - consider creating one\n\n");
+    }
+    
+    analysis.push_str("## Recommendations\n");
+    if status == "pending" {
+        analysis.push_str("- Consider updating spec status to 'in_progress' when work begins\n");
+    }
+    if status == "completed" {
+        analysis.push_str("- ✅ Spec is complete! Review lessons learned for future specs\n");
+    } else {
+        analysis.push_str("- Focus on completing current in-progress tasks before starting new ones\n");
+        analysis.push_str("- Regularly update task status to track progress\n");
+    }
+    
+    Ok(analysis)
+}
+
+fn create_lite_sdd_content(spec_name: &str, description: &str) -> String {
+    format!(r#"# {spec_name}
+
+## Overview
+
+**Goal:** {description}
+
+**User Story:** As a user, I want {description} so that I can achieve my objectives effectively.
+
+**Success Criteria:**
+- [ ] Core functionality is implemented
+- [ ] User interface is intuitive and responsive
+- [ ] All acceptance tests pass
+
+## Tasks
+
+Tasks are defined in tasks.json with detailed breakdown, dependencies, and effort estimates.
+
+Key milestones:
+1. Setup and planning
+2. Core implementation  
+3. Testing and refinement
+4. Documentation and deployment
+
+## Next Steps
+
+Review tasks.json for detailed task breakdown and begin with the first pending task.
+"#, spec_name = spec_name, description = description)
+}
+
+fn create_full_sdd_content(spec_name: &str, description: &str) -> String {
+    format!(r#"# {spec_name}
+
+## Overview
+
+**Goal:** {description}
+
+**User Story:** As a user, I want {description} so that I can achieve my objectives effectively.
+
+**Success Criteria:**
+- [ ] Core functionality is implemented
+- [ ] User interface meets design requirements
+- [ ] Performance meets specified benchmarks
+- [ ] All acceptance tests pass
+- [ ] Documentation is complete
+
+## Technical Specifications
+
+### UI Requirements
+
+**Layout:**
+- Clean, intuitive interface following established design patterns
+- Responsive design supporting desktop and mobile viewports
+- Consistent styling with theme standards
+
+**Components:**
+- Main interface components with clear hierarchy
+- Interactive elements with appropriate feedback
+- Error handling and loading states
+
+**User Experience:**
+- Intuitive navigation and workflow
+- Clear call-to-action buttons
+- Helpful error messages and guidance
+
+### Theme Standards Compliance
+
+This feature will adhere to the theme standards defined in .agent-sdd/standards/theme-standards.md:
+- Color palette consistency
+- Typography standards
+- Spacing and layout guidelines
+- Accessibility requirements
+
+## Tasks
+
+Detailed task breakdown is provided in tasks.json including:
+- Task IDs and dependencies
+- Effort estimates (XS=1 day, S=2-3 days, M=1 week)
+- Implementation order and prerequisites
+
+## Test Scenarios
+
+**Unit Tests:**
+- [ ] Core logic functions
+- [ ] Edge cases and error conditions
+- [ ] Input validation
+
+**Integration Tests:**
+- [ ] Component interactions
+- [ ] API integrations
+- [ ] Database operations
+
+**User Acceptance Tests:**
+- [ ] End-to-end user workflows
+- [ ] Cross-browser compatibility
+- [ ] Accessibility compliance
+
+## Implementation Notes
+
+Additional technical details and decisions will be documented as implementation progresses.
+"#, spec_name = spec_name, description = description)
+}
+
+fn create_tasks_json(spec_name: &str, date: &str) -> String {
+    format!(r#"{{
+  "phase": "Phase 1",
+  "feature": "{}",
+  "status": "pending",
+  "created": "{}",
+  "tasks": [
+    {{
+      "id": "TASK-001",
+      "name": "Setup component structure",
+      "description": "Create main component structure and basic layout",
+      "status": "pending",
+      "dependencies": [],
+      "effort": "XS"
+    }},
+    {{
+      "id": "TASK-002",
+      "name": "Implement core functionality",
+      "description": "Add primary business logic and core features",
+      "status": "pending",
+      "dependencies": ["TASK-001"],
+      "effort": "M"
+    }},
+    {{
+      "id": "TASK-003",
+      "name": "Add user interface",
+      "description": "Create user interface components and styling",
+      "status": "pending",
+      "dependencies": ["TASK-001"],
+      "effort": "S"
+    }},
+    {{
+      "id": "TASK-004",
+      "name": "Integration testing",
+      "description": "Test component integration and user workflows",
+      "status": "pending",
+      "dependencies": ["TASK-002", "TASK-003"],
+      "effort": "S"
+    }}
+  ]
+}}"#, spec_name, date)
+}
+

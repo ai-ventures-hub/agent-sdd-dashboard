@@ -1,0 +1,40 @@
+{
+  "phase": "Phase 1",
+  "feature": "Replace Status column emoji with lucide icons",
+  "status": "pending",
+  "created": "2025-08-17",
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "name": "Setup component structure",
+      "description": "Create main component structure and basic layout",
+      "status": "pending",
+      "dependencies": [],
+      "effort": "XS"
+    },
+    {
+      "id": "TASK-002",
+      "name": "Implement core functionality",
+      "description": "Add primary business logic and core features",
+      "status": "pending",
+      "dependencies": ["TASK-001"],
+      "effort": "M"
+    },
+    {
+      "id": "TASK-003",
+      "name": "Add user interface",
+      "description": "Create user interface components and styling",
+      "status": "pending",
+      "dependencies": ["TASK-001"],
+      "effort": "S"
+    },
+    {
+      "id": "TASK-004",
+      "name": "Integration testing",
+      "description": "Test component integration and user workflows",
+      "status": "pending",
+      "dependencies": ["TASK-002", "TASK-003"],
+      "effort": "S"
+    }
+  ]
+}

@@ -78,15 +78,18 @@
       "id": "SMW-008",
       "name": "Create quick actions bar",
       "description": "Build QuickActionsBar with Open SDD, Mark Task Done, Create Spec, Run Analysis buttons",
-      "status": "pending", 
+      "status": "completed",
+      "completed": "2025-08-17",
       "dependencies": ["SMW-005"],
-      "effort": "S"
+      "effort": "S",
+      "ux_ui_reviewed": true
     },
     {
       "id": "SMW-009",
       "name": "Integrate with existing commands",
       "description": "Connect quick actions to /sdd-create-spec, /sdd-analyze, and text display modal",
-      "status": "pending",
+      "status": "completed",
+      "completed": "2025-08-17",
       "dependencies": ["SMW-008"],
       "effort": "S"
     },
@@ -145,6 +148,75 @@
       "status": "pending",
       "dependencies": ["SMW-013", "SMW-014", "SMW-015"],
       "effort": "M"
+    },
+    {
+      "id": "SMW-017",
+      "name": "Create full-screen specs page",
+      "description": "Implement dedicated full-screen page within the app for specs management instead of cramped modal",
+      "status": "completed",
+      "completed": "2025-08-17",
+      "dependencies": [],
+      "effort": "M"
+    },
+    {
+      "id": "SMW-018", 
+      "name": "Implement page navigation system",
+      "description": "Add back button and page header for seamless navigation between main app and specs page",
+      "status": "completed",
+      "completed": "2025-08-17",
+      "dependencies": ["SMW-017"],
+      "effort": "S"
+    },
+    {
+      "id": "SMW-019",
+      "name": "Enhanced page layout with splitter",
+      "description": "Create resizable two-column layout with adjustable splitter for table and details panel",
+      "status": "completed",
+      "completed": "2025-08-17", 
+      "dependencies": ["SMW-018"],
+      "effort": "S"
+    },
+    {
+      "id": "SMW-020",
+      "name": "Migrate existing specs functionality",
+      "description": "Port all existing specs table, sorting, filtering, and details panel functionality to new page",
+      "status": "pending",
+      "dependencies": ["SMW-019"],
+      "effort": "M"
+    },
+    {
+      "id": "SMW-021",
+      "name": "Add splitter state persistence",
+      "description": "Save and restore splitter position between page visits for optimal user experience",
+      "status": "completed",
+      "completed": "2025-08-17",
+      "dependencies": ["SMW-019"],
+      "effort": "XS"
+    },
+    {
+      "id": "SMW-022",
+      "name": "Enhanced page styling and theme compliance",
+      "description": "Apply improved styling for larger space with proper theme standards and enhanced visual hierarchy",
+      "status": "completed",
+      "completed": "2025-08-17",
+      "dependencies": ["SMW-019"],
+      "effort": "S"
+    },
+    {
+      "id": "SMW-023",
+      "name": "Connect page to existing modal functionality",
+      "description": "Ensure all existing quick actions, spec creation, and analysis features work in new page context",
+      "status": "pending",
+      "dependencies": ["SMW-020"],
+      "effort": "S"
+    },
+    {
+      "id": "SMW-024",
+      "name": "Final testing and polish",
+      "description": "Test page navigation, responsiveness, and ensure seamless integration with main application",
+      "status": "pending",
+      "dependencies": ["SMW-023"],
+      "effort": "S"
     }
   ]
 }

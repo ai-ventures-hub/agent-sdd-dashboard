@@ -1,0 +1,13 @@
+{
+  "tasks": [
+    {
+      "id": "cleanup-unused-files",
+      "title": "Remove unused files from codebase",
+      "description": "Review codebase and remove all unused files, including old backups, build artifacts, and unused frontend dependencies",
+      "status": "In Progress",
+      "ux_ui_reviewed": false,
+      "created_at": "2025-08-17T12:00:00Z",
+      "updated_at": "2025-08-17T12:00:00Z"
+    }
+  ]
+}

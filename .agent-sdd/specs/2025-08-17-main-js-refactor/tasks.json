@@ -1,0 +1,160 @@
+{
+  "spec_id": "main-js-refactor",
+  "feature": "Refactor main.js code",
+  "phase": "Phase 2",
+  "tasks": [
+    {
+      "id": "MJR-001",
+      "name": "Create directory structure",
+      "description": "Create the new directory structure under frontend/ with components/, utils/, and services/ folders",
+      "status": "pending",
+      "effort": "XS",
+      "dependencies": [],
+      "ux_ui_reviewed": false,
+      "files_created": [
+        "frontend/components/modals/",
+        "frontend/components/ui/",
+        "frontend/components/renderers/",
+        "frontend/utils/",
+        "frontend/services/"
+      ]
+    },
+    {
+      "id": "MJR-002",
+      "name": "Extract utility functions",
+      "description": "Create utils/formatters.js with date, file size, status formatting functions",
+      "status": "pending",
+      "effort": "S",
+      "dependencies": ["MJR-001"],
+      "ux_ui_reviewed": false,
+      "files_created": [
+        "frontend/utils/formatters.js",
+        "frontend/utils/dom.js",
+        "frontend/utils/debounce.js"
+      ]
+    },
+    {
+      "id": "MJR-003",
+      "name": "Extract markdown renderer",
+      "description": "Create components/renderers/markdown.js with renderBasicMarkdown and processLists functions",
+      "status": "pending",
+      "effort": "S",
+      "dependencies": ["MJR-002"],
+      "ux_ui_reviewed": false,
+      "files_created": [
+        "frontend/components/renderers/markdown.js"
+      ]
+    },
+    {
+      "id": "MJR-004",
+      "name": "Extract file preview modal",
+      "description": "Create components/modals/filePreview.js with complete file preview functionality",
+      "status": "pending",
+      "effort": "M",
+      "dependencies": ["MJR-003"],
+      "ux_ui_reviewed": false,
+      "files_created": [
+        "frontend/components/modals/filePreview.js"
+      ]
+    },
+    {
+      "id": "MJR-005",
+      "name": "Extract specs service",
+      "description": "Create services/specsService.js with backend API communication functions",
+      "status": "pending",
+      "effort": "S",
+      "dependencies": ["MJR-002"],
+      "ux_ui_reviewed": false,
+      "files_created": [
+        "frontend/services/specsService.js"
+      ]
+    },
+    {
+      "id": "MJR-006",
+      "name": "Extract UI components",
+      "description": "Create components/ui/table.js and components/ui/filters.js for reusable UI components",
+      "status": "pending",
+      "effort": "M",
+      "dependencies": ["MJR-002", "MJR-005"],
+      "ux_ui_reviewed": false,
+      "files_created": [
+        "frontend/components/ui/table.js",
+        "frontend/components/ui/filters.js"
+      ]
+    },
+    {
+      "id": "MJR-007",
+      "name": "Extract specs management window",
+      "description": "Create components/modals/specsManagement.js integrating table and filter components",
+      "status": "pending",
+      "effort": "M",
+      "dependencies": ["MJR-006"],
+      "ux_ui_reviewed": false,
+      "files_created": [
+        "frontend/components/modals/specsManagement.js"
+      ]
+    },
+    {
+      "id": "MJR-008",
+      "name": "Refactor main.js entry point",
+      "description": "Reduce main.js to minimal entry point with proper imports and initialization",
+      "status": "pending",
+      "effort": "S",
+      "dependencies": ["MJR-004", "MJR-007"],
+      "ux_ui_reviewed": false,
+      "files_modified": [
+        "main.js"
+      ]
+    },
+    {
+      "id": "MJR-009",
+      "name": "Update HTML imports",
+      "description": "Update index.html to include new module imports in correct order",
+      "status": "pending",
+      "effort": "XS",
+      "dependencies": ["MJR-008"],
+      "ux_ui_reviewed": false,
+      "files_modified": [
+        "index.html",
+        "frontend/index.html"
+      ]
+    },
+    {
+      "id": "MJR-010",
+      "name": "Test functionality",
+      "description": "Comprehensive testing of all refactored functionality to ensure no regressions",
+      "status": "pending",
+      "effort": "S",
+      "dependencies": ["MJR-009"],
+      "ux_ui_reviewed": false,
+      "testing": [
+        "File preview modal functionality",
+        "Specs management window operations",
+        "Table sorting and filtering",
+        "Modal keyboard shortcuts",
+        "Error handling"
+      ]
+    },
+    {
+      "id": "MJR-011",
+      "name": "Performance optimization",
+      "description": "Optimize module loading and ensure performance is maintained or improved",
+      "status": "pending",
+      "effort": "S",
+      "dependencies": ["MJR-010"],
+      "ux_ui_reviewed": false,
+      "optimization": [
+        "Module loading order",
+        "Memory usage analysis",
+        "Bundle size verification"
+      ]
+    }
+  ],
+  "total_tasks": 11,
+  "estimated_effort": "2-3 weeks",
+  "effort_breakdown": {
+    "XS": 2,
+    "S": 6,
+    "M": 3
+  }
+}

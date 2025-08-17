@@ -11,7 +11,9 @@ pub fn run() {
       commands::scan_project,
       commands::read_file,
       commands::scan_specs,
-      commands::create_agent_sdd_structure
+      commands::create_agent_sdd_structure,
+      commands::create_spec,
+      commands::analyze_spec
     ])
     .setup(|app| {
       if cfg!(debug_assertions) {
