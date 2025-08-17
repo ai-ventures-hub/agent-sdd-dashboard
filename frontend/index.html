@@ -5,36 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob: tauri: ipc:; connect-src * tauri: ipc:; script-src * 'unsafe-inline' 'unsafe-eval' tauri:; style-src * 'unsafe-inline'">
   <title>Agent SDD Dashboard</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="dist/styles.css" />
 </head>
 <body>
-  <header class="app-header">
-    <h1>Agent SDD</h1>
-    <div class="actions">
-      <button id="btnChooseBase">Choose Base Directory</button>
-      <button id="btnRefresh" disabled>Refresh</button>
-      <button id="btnSpecsManagement">Specs Management</button>
-      <button id="btnInstaller">Install Agent-SDD</button>
-      <button id="btnTest">Test API</button>
+  <header class="app-header flex items-center justify-between px-5 py-4 bg-app-panel border-b border-app-outline sticky top-0 z-10">
+    <h1 class="text-lg font-semibold m-0">Agent SDD</h1>
+    <div class="actions flex gap-2">
+      <button id="btnChooseBase" class="bg-app-card text-app-text border border-app-outline px-3 py-2 rounded-lg cursor-pointer hover:bg-app-panel transition-colors">Choose Base Directory</button>
+      <button id="btnRefresh" disabled class="bg-app-card text-app-text border border-app-outline px-3 py-2 rounded-lg cursor-pointer hover:bg-app-panel transition-colors disabled:opacity-60 disabled:cursor-not-allowed">Refresh</button>
+      <button id="btnSpecsManagement" class="bg-app-card text-app-text border border-app-outline px-3 py-2 rounded-lg cursor-pointer hover:bg-app-panel transition-colors">Specs Management</button>
+      <button id="btnInstaller" class="bg-app-card text-app-text border border-app-outline px-3 py-2 rounded-lg cursor-pointer hover:bg-app-panel transition-colors">Install Agent-SDD</button>
     </div>
   </header>
 
-  <main class="layout">
-    <section class="sidebar">
-      <h2>Projects</h2>
-      <div id="basePath" class="muted"></div>
-      <select id="projectsSelect" disabled>
+  <main class="layout grid grid-cols-[320px_1fr] min-h-[calc(100vh-64px)]">
+    <section class="sidebar border-r border-app-outline p-4 bg-app-panel">
+      <h2 class="text-sm text-app-muted m-0 mb-2">Projects</h2>
+      <div id="basePath" class="muted text-app-muted text-xs mb-2"></div>
+      <select id="projectsSelect" disabled class="w-full p-2 bg-app-card border border-app-outline rounded-lg text-app-text text-sm disabled:opacity-60 disabled:cursor-not-allowed">
         <option value="">Select a Project...</option>
       </select>
     </section>
 
-    <section class="content">
+    <section class="content p-5">
       <div id="projectTitle"></div>
-      <div id="summary" class="cards"></div>
+      <div id="summary" class="cards grid grid-cols-5 gap-3 mb-4"></div>
 
-      <div class="controls">
-        <label><input type="checkbox" id="toggleHideSpecs" checked /> Hide files under <code>.agent-sdd/specs</code></label>
-        <label id="autoRefreshWrap" style="display:none;margin-left:12px;"><input type="checkbox" id="toggleAuto" /> Auto-refresh (5s)</label>
+      <div class="controls my-3">
+        <label class="flex items-center gap-2"><input type="checkbox" id="toggleHideSpecs" checked class="mr-2" /> Hide files under <code class="bg-gray-800 px-1 py-0.5 rounded border border-app-outline">.agent-sdd/specs</code></label>
+        <label id="autoRefreshWrap" style="display:none;" class="flex items-center gap-2 ml-3"><input type="checkbox" id="toggleAuto" class="mr-2" /> Auto-refresh (5s)</label>
       </div>
 
       <div id="sections"></div>
@@ -42,8 +41,8 @@
     </section>
   </main>
 
-  <footer class="footer">
-    <small>Local-only viewer. Your files never leave your machine.</small>
+  <footer class="footer py-2.5 px-4 border-t border-app-outline bg-app-panel">
+    <small class="text-app-muted">Local-only viewer. Your files never leave your machine.</small>
   </footer>
 
   <script>

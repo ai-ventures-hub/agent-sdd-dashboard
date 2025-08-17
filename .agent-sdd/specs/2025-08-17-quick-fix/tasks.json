@@ -1,0 +1,18 @@
+{
+  "id": "2025-08-17-quick-fix",
+  "feature": "Remove Test API Button",
+  "phase": "Phase 1",
+  "created": "2025-08-17",
+  "status": "in_progress",
+  "tasks": [
+    {
+      "id": "remove-test-api-button",
+      "name": "Remove Test API action button from header",
+      "description": "Remove the Test API button from the application header as it is no longer needed",
+      "status": "pending",
+      "effort": "XS",
+      "dependencies": [],
+      "ux_ui_reviewed": false
+    }
+  ]
+}
