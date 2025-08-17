@@ -38,33 +38,41 @@
       "id": "SMW-004",
       "name": "Implement table sorting and selection",
       "description": "Add click handlers, row selection state, and column sorting functionality",
-      "status": "pending",
+      "status": "completed",
+      "completed": "2025-08-17",
       "dependencies": ["SMW-003"],
-      "effort": "S"
+      "effort": "S",
+      "ux_ui_reviewed": true
     },
     {
       "id": "SMW-005",
       "name": "Build details panel component",
       "description": "Create SpecDetailsPanel with spec overview, task progress, and metadata display", 
-      "status": "pending",
+      "status": "completed",
+      "completed": "2025-08-17",
       "dependencies": ["SMW-003"],
-      "effort": "M"
+      "effort": "M",
+      "ux_ui_reviewed": true
     },
     {
       "id": "SMW-006",
       "name": "Add task progress indicators",
       "description": "Implement TaskProgressIndicator component with visual status icons (✅/⏳/❌)",
-      "status": "pending",
+      "status": "completed",
+      "completed": "2025-08-17",
       "dependencies": ["SMW-005"],
-      "effort": "S"
+      "effort": "S",
+      "ux_ui_reviewed": true
     },
     {
       "id": "SMW-007",
       "name": "Implement filters and search",
       "description": "Add SpecsToolbar with phase filter, status filter, and full-text search",
-      "status": "pending",
+      "status": "completed",
+      "completed": "2025-08-17",
       "dependencies": ["SMW-004"],
-      "effort": "S"
+      "effort": "S",
+      "ux_ui_reviewed": true
     },
     {
       "id": "SMW-008",
