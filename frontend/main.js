@@ -690,13 +690,152 @@ async function openSpecsManagementWindow() {
 }
 
 async function loadSpecsData() {
-  // Placeholder function - will be implemented in SMW-002
   const tableBody = document.getElementById('specs-table-body')
-  if (tableBody) {
+  if (!tableBody) return
+  
+  // Show loading state
+  tableBody.innerHTML = `
+    <tr>
+      <td colspan="7" class="loading-row">Loading specs...</td>
+    </tr>
+  `
+  
+  try {
+    // Get invoke from global scope
+    if (!invoke && window.__TAURI__ && window.__TAURI__.core) {
+      invoke = window.__TAURI__.core.invoke;
+    }
+    
+    if (!invoke) {
+      throw new Error('Tauri API not available');
+    }
+    
+    // Get current project path from the selected project
+    const projectSelect = document.getElementById('projectsSelect')
+    if (!projectSelect || !projectSelect.value) {
+      throw new Error('No project selected');
+    }
+    
+    const projectPath = projectSelect.value
+    const specs = await invoke('scan_specs', { projectPath })
+    
+    if (specs.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="7" class="no-specs">No specs found in this project.</td>
+        </tr>
+      `
+      return
+    }
+    
+    // Clear table and populate with specs data
+    tableBody.innerHTML = ''
+    
+    specs.forEach(spec => {
+      const row = document.createElement('tr')
+      row.dataset.specId = spec.id
+      row.addEventListener('click', () => selectSpecRow(row, spec))
+      
+      const progressPercent = spec.task_count > 0 
+        ? Math.round((spec.completed_tasks / spec.task_count) * 100) 
+        : 0
+      
+      const statusIcon = getStatusIcon(spec.status)
+      const effortDisplay = spec.tasks.reduce((total, task) => {
+        const effort = getEffortValue(task.effort)
+        return total + effort
+      }, 0)
+      const effortLabel = getEffortLabel(effortDisplay)
+      
+      const modifiedDate = spec.last_modified 
+        ? new Date(spec.last_modified).toLocaleDateString()
+        : 'Unknown'
+      
+      row.innerHTML = `
+        <td><span class="status-icon">${statusIcon}</span></td>
+        <td>${escapeHtml(spec.feature)}</td>
+        <td>${escapeHtml(spec.phase)}</td>
+        <td class="date-text">${escapeHtml(spec.created)}</td>
+        <td class="progress-text">${progressPercent}% (${spec.completed_tasks}/${spec.task_count})</td>
+        <td><span class="effort-badge">${effortLabel}</span></td>
+        <td class="date-text">${modifiedDate}</td>
+      `
+      
+      tableBody.appendChild(row)
+    })
+    
+  } catch (error) {
+    console.error('Failed to load specs:', error)
     tableBody.innerHTML = `
       <tr>
-        <td colspan="7" class="no-specs">No specs found. Backend integration pending.</td>
+        <td colspan="7" class="text-display-error">Failed to load specs: ${error.message}</td>
       </tr>
+    `
+  }
+}
+
+function getStatusIcon(status) {
+  switch (status) {
+    case 'completed': return '✅'
+    case 'in_progress': return '⏳'
+    case 'pending': return '⭕'
+    default: return '❓'
+  }
+}
+
+function getEffortValue(effort) {
+  const effortMap = {
+    'XS': 1,
+    'S': 2, 
+    'M': 3,
+    'L': 5,
+    'XL': 8
+  }
+  return effortMap[effort] || 1
+}
+
+function getEffortLabel(totalEffort) {
+  if (totalEffort <= 3) return 'XS'
+  if (totalEffort <= 6) return 'S'
+  if (totalEffort <= 12) return 'M'
+  if (totalEffort <= 20) return 'L'
+  return 'XL'
+}
+
+function selectSpecRow(row, spec) {
+  // Remove previous selection
+  document.querySelectorAll('.specs-table tbody tr').forEach(r => {
+    r.classList.remove('selected')
+  })
+  
+  // Add selection to clicked row
+  row.classList.add('selected')
+  
+  // Update details panel (placeholder for now - will be implemented in SMW-005)
+  const detailsPanel = document.querySelector('.specs-details-panel')
+  if (detailsPanel) {
+    detailsPanel.innerHTML = `
+      <div style="padding: 16px;">
+        <h3 style="margin: 0 0 16px; color: var(--text);">${escapeHtml(spec.feature)}</h3>
+        <div style="margin-bottom: 12px;">
+          <strong>Phase:</strong> ${escapeHtml(spec.phase)}
+        </div>
+        <div style="margin-bottom: 12px;">
+          <strong>Status:</strong> ${getStatusIcon(spec.status)} ${escapeHtml(spec.status)}
+        </div>
+        <div style="margin-bottom: 12px;">
+          <strong>Progress:</strong> ${spec.completed_tasks}/${spec.task_count} tasks completed
+        </div>
+        <div style="margin-bottom: 12px;">
+          <strong>Created:</strong> ${escapeHtml(spec.created)}
+        </div>
+        <div style="margin-bottom: 16px;">
+          <strong>Path:</strong> <code style="word-break: break-all;">${escapeHtml(spec.path)}</code>
+        </div>
+        <div style="color: var(--muted); font-style: italic;">
+          Detailed view coming in SMW-005 (Details Panel)
+        </div>
+      </div>
     `
   }
 }

@@ -18,17 +18,21 @@
       "id": "SMW-002", 
       "name": "Implement specs data scanning",
       "description": "Add Tauri commands to scan .agent-sdd/specs/ directory and load metadata",
-      "status": "pending",
+      "status": "completed",
+      "completed": "2025-08-17",
       "dependencies": ["SMW-001"],
-      "effort": "S"
+      "effort": "S",
+      "ux_ui_reviewed": true
     },
     {
       "id": "SMW-003",
       "name": "Create specs table component",
       "description": "Build SpecsTable with columns for status, feature, phase, date, progress, size, modified",
-      "status": "pending", 
+      "status": "completed",
+      "completed": "2025-08-17",
       "dependencies": ["SMW-002"],
-      "effort": "M"
+      "effort": "M",
+      "ux_ui_reviewed": true
     },
     {
       "id": "SMW-004",
