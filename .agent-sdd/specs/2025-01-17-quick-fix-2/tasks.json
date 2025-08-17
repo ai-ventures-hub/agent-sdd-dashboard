@@ -1,14 +1,16 @@
 {
   "phase": "Quick Fix",
   "feature": "Fix FileDialogBuilder method name",
-  "status": "pending",
+  "status": "completed",
   "created": "2025-01-17",
   "tasks": [
     {
       "id": "QF-002",
       "name": "Fix FileDialogBuilder method name",
       "description": "Change set_directory_mode to set_directory method",
-      "status": "pending",
+      "status": "completed",
+      "completed": "2025-01-17",
+      "ux_ui_reviewed": true,
       "effort": "XS"
     }
   ]
