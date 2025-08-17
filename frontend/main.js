@@ -35,16 +35,16 @@ async function openFilePreview(filePath) {
   
   const modal = document.createElement('div')
   modal.id = 'text-display-modal'
-  modal.className = 'text-display-modal'
+  modal.className = 'fixed inset-0 z-50 flex items-center justify-center'
   modal.innerHTML = `
-    <div class="modal-backdrop"></div>
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>${filePath.split('/').pop()}</h3>
-        <button class="modal-close">&times;</button>
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] mx-4">
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">${filePath.split('/').pop()}</h3>
+        <button class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">&times;</button>
       </div>
-      <div class="modal-body">
-        <div class="text-display-loading">Loading...</div>
+      <div class="p-4 overflow-auto max-h-[calc(90vh-8rem)]">
+        <div class="text-center text-gray-500 dark:text-gray-400">Loading...</div>
       </div>
     </div>
   `
@@ -52,8 +52,8 @@ async function openFilePreview(filePath) {
   
   // Close handlers
   const closeModal = () => modal.remove()
-  modal.querySelector('.modal-backdrop').addEventListener('click', closeModal)
-  modal.querySelector('.modal-close').addEventListener('click', closeModal)
+  modal.querySelector('.absolute').addEventListener('click', closeModal)
+  modal.querySelector('button').addEventListener('click', closeModal)
   
   // ESC key handler
   const handleEscKey = (e) => {
@@ -76,7 +76,7 @@ async function openFilePreview(filePath) {
     }
     
     const content = await invoke('read_file', { filePath })
-    const bodyEl = modal.querySelector('.modal-body')
+    const bodyEl = modal.querySelector('.p-4')
     
     if (filePath.endsWith('.md')) {
       // For markdown files, render as HTML (basic rendering for now)
@@ -94,8 +94,8 @@ async function openFilePreview(filePath) {
       bodyEl.innerHTML = `<pre class="text-display">${escapeHtml(content)}</pre>`
     }
   } catch (error) {
-    modal.querySelector('.modal-body').innerHTML = `
-      <div class="text-display-error">Failed to load file: ${error.message}</div>
+    modal.querySelector('.p-4').innerHTML = `
+      <div class="text-red-600 dark:text-red-400 text-center">Failed to load file: ${error.message}</div>
     `
   }
 }
@@ -318,15 +318,15 @@ async function openInstallerWizard() {
   
   const modal = document.createElement('div')
   modal.id = 'installer-wizard-modal'
-  modal.className = 'installer-wizard-modal'
+  modal.className = 'fixed inset-0 z-50 flex items-center justify-center'
   modal.innerHTML = `
-    <div class="modal-backdrop"></div>
-    <div class="modal-content installer-modal">
-      <div class="modal-header">
-        <h3>Agent-SDD Installer Wizard</h3>
-        <button class="modal-close">&times;</button>
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] mx-4">
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Agent-SDD Installer Wizard</h3>
+        <button class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">&times;</button>
       </div>
-      <div class="modal-body">
+      <div class="p-4 overflow-auto max-h-[calc(90vh-12rem)]">
         <div class="installer-step" id="step-1">
           <h4>Step 1: Choose Project Directory</h4>
           <p>Select the directory where you want to install Agent-SDD structure.</p>
@@ -376,11 +376,11 @@ async function openInstallerWizard() {
           <div id="install-result" style="display: none;"></div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button id="wizard-back" class="btn-secondary" style="display: none;">Back</button>
-        <button id="wizard-next" class="btn-primary">Next</button>
-        <button id="wizard-install" class="btn-primary" style="display: none;">Install</button>
-        <button id="wizard-cancel" class="btn-secondary">Cancel</button>
+      <div class="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
+        <button id="wizard-back" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors" style="display: none;">Back</button>
+        <button id="wizard-next" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">Next</button>
+        <button id="wizard-install" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors" style="display: none;">Install</button>
+        <button id="wizard-cancel" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors">Cancel</button>
       </div>
     </div>
   `
@@ -393,8 +393,8 @@ async function openInstallerWizard() {
   
   // Close handlers
   const closeModal = () => modal.remove()
-  modal.querySelector('.modal-backdrop').addEventListener('click', closeModal)
-  modal.querySelector('.modal-close').addEventListener('click', closeModal)
+  modal.querySelector('.absolute').addEventListener('click', closeModal)
+  modal.querySelector('button').addEventListener('click', closeModal)
   modal.querySelector('#wizard-cancel').addEventListener('click', closeModal)
   
   // ESC key handler
@@ -863,15 +863,15 @@ async function openSpecsManagementModal() {
   
   const modal = document.createElement('div')
   modal.id = 'specs-management-modal'
-  modal.className = 'specs-management-modal'
+  modal.className = 'fixed inset-0 z-50 flex items-center justify-center'
   modal.innerHTML = `
-    <div class="modal-backdrop"></div>
-    <div class="modal-content specs-management-content">
-      <div class="modal-header">
-        <h3>Specs Management</h3>
-        <button class="modal-close">&times;</button>
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-6xl max-h-[90vh] mx-4">
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Specs Management</h3>
+        <button class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">&times;</button>
       </div>
-      <div class="modal-body specs-management-body">
+      <div class="p-4 overflow-auto max-h-[calc(90vh-8rem)]">
         <div class="specs-toolbar">
           <div class="toolbar-search">
             <input type="text" id="specs-search" placeholder="Search specs..." />
@@ -929,8 +929,8 @@ async function openSpecsManagementModal() {
   
   // Close handlers
   const closeModal = () => modal.remove()
-  modal.querySelector('.modal-backdrop').addEventListener('click', closeModal)
-  modal.querySelector('.modal-close').addEventListener('click', closeModal)
+  modal.querySelector('.absolute').addEventListener('click', closeModal)
+  modal.querySelectorAll('button')[0].addEventListener('click', closeModal)
   
   // ESC key handler
   const handleEscKey = (e) => {
@@ -1657,15 +1657,15 @@ function displayAnalysisResults(spec, results) {
   
   const modal = document.createElement('div')
   modal.id = 'analysis-results-modal'
-  modal.className = 'text-display-modal'
+  modal.className = 'fixed inset-0 z-50 flex items-center justify-center'
   modal.innerHTML = `
-    <div class="modal-backdrop"></div>
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Analysis Results: ${spec.feature}</h3>
-        <button class="modal-close">&times;</button>
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] mx-4">
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Analysis Results: ${spec.feature}</h3>
+        <button class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">&times;</button>
       </div>
-      <div class="modal-body">
+      <div class="p-4 overflow-auto max-h-[calc(90vh-8rem)]">
         <div class="text-display markdown">${renderBasicMarkdown(results)}</div>
       </div>
     </div>
@@ -1674,8 +1674,8 @@ function displayAnalysisResults(spec, results) {
   
   // Close handlers
   const closeModal = () => modal.remove()
-  modal.querySelector('.modal-backdrop').addEventListener('click', closeModal)
-  modal.querySelector('.modal-close').addEventListener('click', closeModal)
+  modal.querySelector('.absolute').addEventListener('click', closeModal)
+  modal.querySelector('button').addEventListener('click', closeModal)
   
   // ESC key handler
   const handleEscKey = (e) => {
@@ -1694,15 +1694,15 @@ function openCreateSpecDialog() {
   
   const modal = document.createElement('div')
   modal.id = 'create-spec-modal'
-  modal.className = 'create-spec-modal'
+  modal.className = 'fixed inset-0 z-50 flex items-center justify-center'
   modal.innerHTML = `
-    <div class="modal-backdrop"></div>
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Create New Spec</h3>
-        <button class="modal-close">&times;</button>
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg max-h-[90vh] mx-4">
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Create New Spec</h3>
+        <button class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">&times;</button>
       </div>
-      <div class="modal-body">
+      <div class="p-4">
         <div class="form-group">
           <label for="spec-name-input">Spec Name:</label>
           <input type="text" id="spec-name-input" placeholder="Enter spec name (e.g., User Authentication)" />
@@ -1718,9 +1718,9 @@ function openCreateSpecDialog() {
           </label>
         </div>
       </div>
-      <div class="modal-footer">
-        <button id="create-spec-btn" class="btn-primary">Create Spec</button>
-        <button id="cancel-spec-btn" class="btn-secondary">Cancel</button>
+      <div class="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
+        <button id="create-spec-btn" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">Create Spec</button>
+        <button id="cancel-spec-btn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors">Cancel</button>
       </div>
     </div>
   `
@@ -1728,8 +1728,8 @@ function openCreateSpecDialog() {
   
   // Close handlers
   const closeModal = () => modal.remove()
-  modal.querySelector('.modal-backdrop').addEventListener('click', closeModal)
-  modal.querySelector('.modal-close').addEventListener('click', closeModal)
+  modal.querySelector('.absolute').addEventListener('click', closeModal)
+  modal.querySelector('button').addEventListener('click', closeModal)
   modal.querySelector('#cancel-spec-btn').addEventListener('click', closeModal)
   
   // ESC key handler
