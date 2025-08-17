@@ -647,7 +647,7 @@ async function openSpecsManagementWindow() {
                   <th class="sortable" data-column="phase">Phase</th>
                   <th class="sortable" data-column="date">Date</th>
                   <th class="sortable" data-column="progress">Progress</th>
-                  <th class="sortable" data-column="effort">Size</th>
+                  <th class="sortable" data-column="effort">Task ID</th>
                   <th class="sortable" data-column="modified">Modified</th>
                 </tr>
               </thead>
@@ -1069,7 +1069,12 @@ function renderTaskStatusGroup(title, tasks, status) {
             <div class="task-item-header">
               <span class="task-status-icon" title="${escapeHtml(task.status.replace('_', ' ').toUpperCase())}">${getTaskStatusIcon(task.status)}</span>
               <span class="task-name">${escapeHtml(task.name)}</span>
-              <span class="task-effort effort-badge">${escapeHtml(task.effort)}</span>
+              <div class="task-id-container">
+                <span class="task-id">${escapeHtml(task.id)}</span>
+                <button class="copy-task-id-btn" data-task-id="${escapeHtml(task.id)}" title="Copy task ID to clipboard">
+                  <span class="copy-icon">📋</span>
+                </button>
+              </div>
             </div>
             <div class="task-description">${escapeHtml(task.description)}</div>
             ${task.dependencies && task.dependencies.length > 0 ? 
@@ -1239,7 +1244,7 @@ function attachQuickActionHandlers(spec) {
     const createSpecBtn = document.querySelector('.quick-action-btn.create-spec')
     if (createSpecBtn) {
       createSpecBtn.addEventListener('click', () => {
-        openCreateSpecDialog(spec)
+        openCreateSpecDialog()
       })
     }
     
@@ -1283,6 +1288,53 @@ function attachQuickActionHandlers(spec) {
         }
       })
     }
+    
+    // Copy task ID buttons
+    const copyTaskIdBtns = document.querySelectorAll('.copy-task-id-btn')
+    copyTaskIdBtns.forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        
+        const taskId = btn.dataset.taskId
+        try {
+          await navigator.clipboard.writeText(taskId)
+          
+          // Visual feedback
+          const originalIcon = btn.querySelector('.copy-icon')
+          const originalText = originalIcon.textContent
+          originalIcon.textContent = '✅'
+          
+          setTimeout(() => {
+            originalIcon.textContent = originalText
+          }, 1000)
+        } catch (error) {
+          console.error('Failed to copy task ID:', error)
+          
+          // Fallback for older browsers
+          const textArea = document.createElement('textarea')
+          textArea.value = taskId
+          document.body.appendChild(textArea)
+          textArea.select()
+          try {
+            document.execCommand('copy')
+            
+            // Visual feedback
+            const originalIcon = btn.querySelector('.copy-icon')
+            const originalText = originalIcon.textContent
+            originalIcon.textContent = '✅'
+            
+            setTimeout(() => {
+              originalIcon.textContent = originalText
+            }, 1000)
+          } catch (fallbackError) {
+            console.error('Fallback copy failed:', fallbackError)
+            alert('Failed to copy task ID to clipboard')
+          }
+          document.body.removeChild(textArea)
+        }
+      })
+    })
   }, 100)
 }
 
@@ -1369,7 +1421,7 @@ function displayAnalysisResults(spec, results) {
   document.addEventListener('keydown', handleEscKey)
 }
 
-function openCreateSpecDialog(currentSpec) {
+function openCreateSpecDialog() {
   // Create spec creation modal
   const existing = document.getElementById('create-spec-modal')
   if (existing) existing.remove()

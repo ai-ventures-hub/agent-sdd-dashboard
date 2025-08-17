@@ -1,0 +1,13 @@
+[
+  {
+    "id": "task-001",
+    "title": "Replace Size status with copyable task ID in specs management window",
+    "description": "In the specs management window under 'Task Breakdown', replace the 'Size' status in the upper right with the task ID and add a small copy icon next to it. When clicked, it should copy the task ID to clipboard.",
+    "status": "In Progress",
+    "priority": "Medium",
+    "estimate": "Small",
+    "assignee": "Claude",
+    "created_date": "2025-08-17",
+    "ux_ui_reviewed": false
+  }
+]
