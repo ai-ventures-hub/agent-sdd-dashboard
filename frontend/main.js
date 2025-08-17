@@ -9,6 +9,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Set up file click handlers (will be added after text display component)
   setupFileClickHandlers()
+  
+  // Set up installer wizard
+  setupInstallerWizard()
+  
+  // Set up specs management window
+  setupSpecsManagementWindow()
 })
 
 function setupFileClickHandlers() {
@@ -298,5 +304,403 @@ function escapeHtml(text) {
   return div.innerHTML
 }
 
+function setupInstallerWizard() {
+  const installerBtn = document.getElementById('btnInstaller')
+  if (installerBtn) {
+    installerBtn.addEventListener('click', openInstallerWizard)
+  }
+}
+
+async function openInstallerWizard() {
+  // Create installer wizard modal
+  const existing = document.getElementById('installer-wizard-modal')
+  if (existing) existing.remove()
+  
+  const modal = document.createElement('div')
+  modal.id = 'installer-wizard-modal'
+  modal.className = 'installer-wizard-modal'
+  modal.innerHTML = `
+    <div class="modal-backdrop"></div>
+    <div class="modal-content installer-modal">
+      <div class="modal-header">
+        <h3>Agent-SDD Installer Wizard</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="installer-step" id="step-1">
+          <h4>Step 1: Choose Project Directory</h4>
+          <p>Select the directory where you want to install Agent-SDD structure.</p>
+          <button id="choose-project-dir" class="btn-primary">Choose Directory</button>
+          <div id="selected-project-path" class="selected-path"></div>
+        </div>
+        
+        <div class="installer-step" id="step-2" style="display: none;">
+          <h4>Step 2: Configure Project Settings</h4>
+          <div class="form-group">
+            <label for="project-name">Project Name:</label>
+            <input type="text" id="project-name" placeholder="Enter project name" />
+          </div>
+          <div class="form-group">
+            <label for="project-description">Project Description:</label>
+            <textarea id="project-description" placeholder="Brief description of the project" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="create-standards" checked />
+              Create standards directory with common templates
+            </label>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="create-specs" checked />
+              Create specs directory for technical specifications
+            </label>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="create-agents" checked />
+              Create agents directory for AI agent configurations
+            </label>
+          </div>
+        </div>
+        
+        <div class="installer-step" id="step-3" style="display: none;">
+          <h4>Step 3: Review & Install</h4>
+          <div id="install-summary"></div>
+          <div class="install-progress" style="display: none;">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div id="progress-text">Installing...</div>
+          </div>
+          <div id="install-result" style="display: none;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="wizard-back" style="display: none;">Back</button>
+        <button id="wizard-next">Next</button>
+        <button id="wizard-install" style="display: none;" class="btn-primary">Install</button>
+        <button id="wizard-cancel">Cancel</button>
+      </div>
+    </div>
+  `
+  document.body.appendChild(modal)
+  
+  // Modal state
+  let currentStep = 1
+  let selectedProjectPath = ''
+  let projectConfig = {}
+  
+  // Close handlers
+  const closeModal = () => modal.remove()
+  modal.querySelector('.modal-backdrop').addEventListener('click', closeModal)
+  modal.querySelector('.modal-close').addEventListener('click', closeModal)
+  modal.querySelector('#wizard-cancel').addEventListener('click', closeModal)
+  
+  // ESC key handler
+  const handleEscKey = (e) => {
+    if (e.key === 'Escape' || e.keyCode === 27) {
+      closeModal()
+      document.removeEventListener('keydown', handleEscKey)
+    }
+  }
+  document.addEventListener('keydown', handleEscKey)
+  
+  // Step navigation
+  function showStep(step) {
+    // Hide all steps
+    for (let i = 1; i <= 3; i++) {
+      document.getElementById(`step-${i}`).style.display = 'none'
+    }
+    
+    // Show current step
+    document.getElementById(`step-${step}`).style.display = 'block'
+    currentStep = step
+    
+    // Update buttons
+    const backBtn = document.getElementById('wizard-back')
+    const nextBtn = document.getElementById('wizard-next')
+    const installBtn = document.getElementById('wizard-install')
+    
+    backBtn.style.display = step > 1 ? 'inline-block' : 'none'
+    nextBtn.style.display = step < 3 ? 'inline-block' : 'none'
+    installBtn.style.display = step === 3 ? 'inline-block' : 'none'
+    
+    // Update next button state
+    updateNextButtonState()
+  }
+  
+  function updateNextButtonState() {
+    const nextBtn = document.getElementById('wizard-next')
+    if (currentStep === 1) {
+      nextBtn.disabled = !selectedProjectPath
+    } else if (currentStep === 2) {
+      const projectName = document.getElementById('project-name').value.trim()
+      nextBtn.disabled = !projectName
+    }
+  }
+  
+  // Step 1: Choose directory
+  document.getElementById('choose-project-dir').addEventListener('click', async () => {
+    try {
+      if (!invoke && window.__TAURI__ && window.__TAURI__.core) {
+        invoke = window.__TAURI__.core.invoke;
+      }
+      
+      if (!invoke) {
+        throw new Error('Tauri API not available');
+      }
+      
+      const path = await invoke('select_base_dir')
+      if (path) {
+        selectedProjectPath = path
+        document.getElementById('selected-project-path').textContent = path
+        updateNextButtonState()
+      }
+    } catch (error) {
+      alert(`Failed to select directory: ${error.message}`)
+    }
+  })
+  
+  // Step 2: Form validation
+  document.getElementById('project-name').addEventListener('input', updateNextButtonState)
+  
+  // Navigation buttons
+  document.getElementById('wizard-back').addEventListener('click', () => {
+    if (currentStep > 1) {
+      showStep(currentStep - 1)
+    }
+  })
+  
+  document.getElementById('wizard-next').addEventListener('click', () => {
+    if (currentStep === 1 && selectedProjectPath) {
+      showStep(2)
+    } else if (currentStep === 2) {
+      // Collect configuration
+      projectConfig = {
+        name: document.getElementById('project-name').value.trim(),
+        description: document.getElementById('project-description').value.trim(),
+        createStandards: document.getElementById('create-standards').checked,
+        createSpecs: document.getElementById('create-specs').checked,
+        createAgents: document.getElementById('create-agents').checked
+      }
+      
+      // Show summary
+      showInstallSummary()
+      showStep(3)
+    }
+  })
+  
+  document.getElementById('wizard-install').addEventListener('click', performInstallation)
+  
+  function showInstallSummary() {
+    const summary = document.getElementById('install-summary')
+    const directories = []
+    if (projectConfig.createStandards) directories.push('standards/')
+    if (projectConfig.createSpecs) directories.push('specs/')
+    if (projectConfig.createAgents) directories.push('agents/')
+    directories.push('product/', 'instructions/')
+    
+    summary.innerHTML = `
+      <div class="summary-item">
+        <strong>Project Path:</strong> ${selectedProjectPath}
+      </div>
+      <div class="summary-item">
+        <strong>Project Name:</strong> ${projectConfig.name}
+      </div>
+      <div class="summary-item">
+        <strong>Description:</strong> ${projectConfig.description || 'No description'}
+      </div>
+      <div class="summary-item">
+        <strong>Directories to create:</strong>
+        <ul class="directory-list">
+          ${directories.map(dir => `<li>.agent-sdd/${dir}</li>`).join('')}
+        </ul>
+      </div>
+    `
+  }
+  
+  async function performInstallation() {
+    const progressEl = document.querySelector('.install-progress')
+    const resultEl = document.getElementById('install-result')
+    const installBtn = document.getElementById('wizard-install')
+    
+    progressEl.style.display = 'block'
+    installBtn.disabled = true
+    
+    try {
+      if (!invoke && window.__TAURI__ && window.__TAURI__.core) {
+        invoke = window.__TAURI__.core.invoke;
+      }
+      
+      if (!invoke) {
+        throw new Error('Tauri API not available');
+      }
+      
+      // Simulate installation progress
+      const steps = [
+        'Creating .agent-sdd directory...',
+        'Creating product directory...',
+        'Creating instructions directory...',
+        projectConfig.createStandards ? 'Creating standards directory...' : null,
+        projectConfig.createSpecs ? 'Creating specs directory...' : null,
+        projectConfig.createAgents ? 'Creating agents directory...' : null,
+        'Creating configuration files...',
+        'Installation complete!'
+      ].filter(Boolean)
+      
+      for (let i = 0; i < steps.length; i++) {
+        document.getElementById('progress-text').textContent = steps[i]
+        document.getElementById('progress-fill').style.width = `${((i + 1) / steps.length) * 100}%`
+        
+        if (i === 0) {
+          // Actually create the directories
+          await invoke('create_agent_sdd_structure', {
+            projectPath: selectedProjectPath,
+            config: projectConfig
+          })
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 300))
+      }
+      
+      progressEl.style.display = 'none'
+      resultEl.style.display = 'block'
+      resultEl.innerHTML = `
+        <div class="install-success">
+          <h4>✅ Installation Successful!</h4>
+          <p>Agent-SDD structure has been created in:<br><code>${selectedProjectPath}/.agent-sdd/</code></p>
+          <p>You can now close this wizard and refresh the project list to see your new project.</p>
+        </div>
+      `
+      
+      document.getElementById('wizard-cancel').textContent = 'Close'
+      
+    } catch (error) {
+      progressEl.style.display = 'none'
+      resultEl.style.display = 'block'
+      resultEl.innerHTML = `
+        <div class="install-error">
+          <h4>❌ Installation Failed</h4>
+          <p>Error: ${error.message}</p>
+        </div>
+      `
+      installBtn.disabled = false
+    }
+  }
+  
+  // Initialize
+  showStep(1)
+}
+
+function setupSpecsManagementWindow() {
+  const specsBtn = document.getElementById('btnSpecsManagement')
+  if (specsBtn) {
+    specsBtn.addEventListener('click', openSpecsManagementWindow)
+  }
+}
+
+async function openSpecsManagementWindow() {
+  // Create specs management window modal
+  const existing = document.getElementById('specs-management-modal')
+  if (existing) existing.remove()
+  
+  const modal = document.createElement('div')
+  modal.id = 'specs-management-modal'
+  modal.className = 'specs-management-modal'
+  modal.innerHTML = `
+    <div class="modal-backdrop"></div>
+    <div class="modal-content specs-management-content">
+      <div class="modal-header">
+        <h3>Specs Management</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body specs-management-body">
+        <div class="specs-toolbar">
+          <div class="toolbar-search">
+            <input type="text" id="specs-search" placeholder="Search specs..." />
+          </div>
+          <div class="toolbar-filters">
+            <select id="phase-filter">
+              <option value="">All Phases</option>
+              <option value="Phase 1">Phase 1</option>
+              <option value="Phase 2">Phase 2</option>
+              <option value="Phase 3">Phase 3</option>
+              <option value="Phase 4">Phase 4</option>
+            </select>
+            <select id="status-filter">
+              <option value="">All Status</option>
+              <option value="completed">Completed</option>
+              <option value="in_progress">In Progress</option>
+              <option value="pending">Not Started</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="specs-layout">
+          <div class="specs-table-container">
+            <table class="specs-table">
+              <thead>
+                <tr>
+                  <th class="sortable" data-column="status">Status</th>
+                  <th class="sortable" data-column="feature">Feature</th>
+                  <th class="sortable" data-column="phase">Phase</th>
+                  <th class="sortable" data-column="date">Date</th>
+                  <th class="sortable" data-column="progress">Progress</th>
+                  <th class="sortable" data-column="effort">Size</th>
+                  <th class="sortable" data-column="modified">Modified</th>
+                </tr>
+              </thead>
+              <tbody id="specs-table-body">
+                <tr>
+                  <td colspan="7" class="loading-row">Loading specs...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="specs-details-panel">
+            <div class="details-placeholder">
+              <div class="placeholder-icon">📋</div>
+              <div class="placeholder-text">Select a spec to view details</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+  document.body.appendChild(modal)
+  
+  // Close handlers
+  const closeModal = () => modal.remove()
+  modal.querySelector('.modal-backdrop').addEventListener('click', closeModal)
+  modal.querySelector('.modal-close').addEventListener('click', closeModal)
+  
+  // ESC key handler
+  const handleEscKey = (e) => {
+    if (e.key === 'Escape' || e.keyCode === 27) {
+      closeModal()
+      document.removeEventListener('keydown', handleEscKey)
+    }
+  }
+  document.addEventListener('keydown', handleEscKey)
+  
+  // Load specs data (placeholder for now)
+  await loadSpecsData()
+}
+
+async function loadSpecsData() {
+  // Placeholder function - will be implemented in SMW-002
+  const tableBody = document.getElementById('specs-table-body')
+  if (tableBody) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="7" class="no-specs">No specs found. Backend integration pending.</td>
+      </tr>
+    `
+  }
+}
+
 // Export for use in shared.js
 window.openFilePreview = openFilePreview
+window.openSpecsManagementWindow = openSpecsManagementWindow

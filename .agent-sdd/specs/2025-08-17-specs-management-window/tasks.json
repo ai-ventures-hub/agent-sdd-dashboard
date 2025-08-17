@@ -1,0 +1,138 @@
+{
+  "phase": "Phase 4",
+  "feature": "Specs Management Window",
+  "status": "pending",
+  "created": "2025-08-17",
+  "tasks": [
+    {
+      "id": "SMW-001",
+      "name": "Setup component structure",
+      "description": "Create main SpecsManagementWindow component and basic layout structure",
+      "status": "completed",
+      "completed": "2025-08-17",
+      "dependencies": [],
+      "effort": "XS",
+      "ux_ui_reviewed": true
+    },
+    {
+      "id": "SMW-002", 
+      "name": "Implement specs data scanning",
+      "description": "Add Tauri commands to scan .agent-sdd/specs/ directory and load metadata",
+      "status": "pending",
+      "dependencies": ["SMW-001"],
+      "effort": "S"
+    },
+    {
+      "id": "SMW-003",
+      "name": "Create specs table component",
+      "description": "Build SpecsTable with columns for status, feature, phase, date, progress, size, modified",
+      "status": "pending", 
+      "dependencies": ["SMW-002"],
+      "effort": "M"
+    },
+    {
+      "id": "SMW-004",
+      "name": "Implement table sorting and selection",
+      "description": "Add click handlers, row selection state, and column sorting functionality",
+      "status": "pending",
+      "dependencies": ["SMW-003"],
+      "effort": "S"
+    },
+    {
+      "id": "SMW-005",
+      "name": "Build details panel component",
+      "description": "Create SpecDetailsPanel with spec overview, task progress, and metadata display", 
+      "status": "pending",
+      "dependencies": ["SMW-003"],
+      "effort": "M"
+    },
+    {
+      "id": "SMW-006",
+      "name": "Add task progress indicators",
+      "description": "Implement TaskProgressIndicator component with visual status icons (✅/⏳/❌)",
+      "status": "pending",
+      "dependencies": ["SMW-005"],
+      "effort": "S"
+    },
+    {
+      "id": "SMW-007",
+      "name": "Implement filters and search",
+      "description": "Add SpecsToolbar with phase filter, status filter, and full-text search",
+      "status": "pending",
+      "dependencies": ["SMW-004"],
+      "effort": "S"
+    },
+    {
+      "id": "SMW-008",
+      "name": "Create quick actions bar",
+      "description": "Build QuickActionsBar with Open SDD, Mark Task Done, Create Spec, Run Analysis buttons",
+      "status": "pending", 
+      "dependencies": ["SMW-005"],
+      "effort": "S"
+    },
+    {
+      "id": "SMW-009",
+      "name": "Integrate with existing commands",
+      "description": "Connect quick actions to /sdd-create-spec, /sdd-analyze, and text display modal",
+      "status": "pending",
+      "dependencies": ["SMW-008"],
+      "effort": "S"
+    },
+    {
+      "id": "SMW-010",
+      "name": "Implement task status updates",
+      "description": "Add functionality to update tasks.json when marking tasks complete",
+      "status": "pending",
+      "dependencies": ["SMW-008"],
+      "effort": "S"
+    },
+    {
+      "id": "SMW-011",
+      "name": "Add file system monitoring", 
+      "description": "Implement real-time updates when spec files are modified externally",
+      "status": "pending",
+      "dependencies": ["SMW-002"],
+      "effort": "M"
+    },
+    {
+      "id": "SMW-012",
+      "name": "Apply theme standards styling",
+      "description": "Ensure all components follow theme standards with proper colors, typography, and spacing",
+      "status": "pending",
+      "dependencies": ["SMW-006", "SMW-007", "SMW-008"],
+      "effort": "S"
+    },
+    {
+      "id": "SMW-013",
+      "name": "Implement accessibility features",
+      "description": "Add keyboard navigation, ARIA labels, screen reader support, and focus management",
+      "status": "pending",
+      "dependencies": ["SMW-012"],
+      "effort": "S"
+    },
+    {
+      "id": "SMW-014",
+      "name": "Add performance optimizations",
+      "description": "Implement lazy loading, virtual scrolling, debounced search, and memoization",
+      "status": "pending",
+      "dependencies": ["SMW-011"],
+      "effort": "M"
+    },
+    {
+      "id": "SMW-015",
+      "name": "Error handling and edge cases",
+      "description": "Handle malformed JSON, missing files, permission errors, and provide user feedback",
+      "status": "pending",
+      "dependencies": ["SMW-010"],
+      "effort": "S"
+    },
+    {
+      "id": "SMW-016",
+      "name": "Integration testing",
+      "description": "Test all workflows, backend integration, file operations, and UI interactions",
+      "status": "pending",
+      "dependencies": ["SMW-013", "SMW-014", "SMW-015"],
+      "effort": "M"
+    }
+  ]
+}
