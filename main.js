@@ -389,14 +389,350 @@ async function openSpecsManagementWindow() {
 }
 
 async function loadSpecsData() {
-  // Placeholder function - will be implemented in SMW-002
   const tableBody = document.getElementById('specs-table-body')
-  if (tableBody) {
+  if (!tableBody) return
+  
+  try {
+    // Get the selected project path from state
+    const projectPath = state.selectedProject || '.'
+    
+    // Fetch specs data from backend
+    const specs = await invoke('scan_specs', { projectPath })
+    
+    // Store specs data globally for filtering
+    window.specsData = specs
+    window.filteredSpecsData = specs
+    
+    // Render the specs table
+    renderSpecsTable(specs)
+    
+    // Set up filter and search handlers
+    setupSpecsFiltersAndSearch()
+    
+  } catch (error) {
+    console.error('Failed to load specs:', error)
     tableBody.innerHTML = `
       <tr>
-        <td colspan="7" class="no-specs">No specs found. Backend integration pending.</td>
+        <td colspan="7" class="error-row">Failed to load specs: ${error.message}</td>
       </tr>
     `
+  }
+}
+
+function renderSpecsTable(specs) {
+  const tableBody = document.getElementById('specs-table-body')
+  if (!tableBody) return
+  
+  if (specs.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="7" class="no-specs">No specs found</td>
+      </tr>
+    `
+    return
+  }
+  
+  tableBody.innerHTML = specs.map((spec, index) => {
+    const progress = spec.task_count > 0 
+      ? Math.round((spec.completed_tasks / spec.task_count) * 100) 
+      : 0
+    
+    const statusIcon = getStatusIcon(spec.status)
+    const statusClass = getStatusClass(spec.status)
+    
+    // Format dates
+    const createdDate = formatDate(spec.created)
+    const modifiedDate = spec.last_modified ? formatDate(new Date(spec.last_modified)) : '-'
+    
+    // Format size
+    const sizeStr = formatFileSize(spec.size_bytes)
+    
+    return `
+      <tr class="spec-row" data-spec-id="${spec.id}" data-index="${index}">
+        <td class="status-cell">
+          <span class="status-badge ${statusClass}">${statusIcon} ${spec.status}</span>
+        </td>
+        <td class="feature-cell">${escapeHtml(spec.feature)}</td>
+        <td class="phase-cell">${escapeHtml(spec.phase)}</td>
+        <td class="date-cell">${createdDate}</td>
+        <td class="progress-cell">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${progress}%"></div>
+            <span class="progress-text">${spec.completed_tasks}/${spec.task_count}</span>
+          </div>
+        </td>
+        <td class="size-cell">${sizeStr}</td>
+        <td class="modified-cell">${modifiedDate}</td>
+      </tr>
+    `
+  }).join('')
+  
+  // Add click handlers to rows
+  document.querySelectorAll('.spec-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const index = parseInt(row.dataset.index)
+      selectSpec(specs[index])
+    })
+  })
+}
+
+function setupSpecsFiltersAndSearch() {
+  // Search functionality
+  const searchInput = document.getElementById('specs-search')
+  if (searchInput) {
+    searchInput.addEventListener('input', debounce(() => {
+      applySpecsFilters()
+    }, 300))
+  }
+  
+  // Phase filter
+  const phaseFilter = document.getElementById('phase-filter')
+  if (phaseFilter) {
+    phaseFilter.addEventListener('change', () => {
+      applySpecsFilters()
+    })
+  }
+  
+  // Status filter
+  const statusFilter = document.getElementById('status-filter')
+  if (statusFilter) {
+    statusFilter.addEventListener('change', () => {
+      applySpecsFilters()
+    })
+  }
+  
+  // Table sorting
+  document.querySelectorAll('.specs-table th.sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const column = th.dataset.column
+      sortSpecsTable(column)
+    })
+  })
+}
+
+function applySpecsFilters() {
+  if (!window.specsData) return
+  
+  const searchValue = document.getElementById('specs-search')?.value.toLowerCase() || ''
+  const phaseValue = document.getElementById('phase-filter')?.value || ''
+  const statusValue = document.getElementById('status-filter')?.value || ''
+  
+  // Apply filters
+  let filtered = window.specsData.filter(spec => {
+    // Search filter - search in feature, phase, tasks
+    if (searchValue) {
+      const searchIn = [
+        spec.feature.toLowerCase(),
+        spec.phase.toLowerCase(),
+        spec.status.toLowerCase(),
+        ...spec.tasks.map(t => t.name.toLowerCase()),
+        ...spec.tasks.map(t => t.description.toLowerCase())
+      ].join(' ')
+      
+      if (!searchIn.includes(searchValue)) {
+        return false
+      }
+    }
+    
+    // Phase filter
+    if (phaseValue && spec.phase !== phaseValue) {
+      return false
+    }
+    
+    // Status filter
+    if (statusValue && spec.status !== statusValue) {
+      return false
+    }
+    
+    return true
+  })
+  
+  window.filteredSpecsData = filtered
+  renderSpecsTable(filtered)
+}
+
+function sortSpecsTable(column) {
+  if (!window.filteredSpecsData) return
+  
+  // Toggle sort direction
+  const currentSort = window.currentSpecsSort || {}
+  const isAscending = currentSort.column === column ? !currentSort.ascending : true
+  
+  window.currentSpecsSort = { column, ascending: isAscending }
+  
+  // Sort the data
+  const sorted = [...window.filteredSpecsData].sort((a, b) => {
+    let aVal, bVal
+    
+    switch (column) {
+      case 'status':
+        aVal = a.status
+        bVal = b.status
+        break
+      case 'feature':
+        aVal = a.feature
+        bVal = b.feature
+        break
+      case 'phase':
+        aVal = a.phase
+        bVal = b.phase
+        break
+      case 'date':
+        aVal = a.created
+        bVal = b.created
+        break
+      case 'progress':
+        aVal = a.task_count > 0 ? a.completed_tasks / a.task_count : 0
+        bVal = b.task_count > 0 ? b.completed_tasks / b.task_count : 0
+        break
+      case 'effort':
+        aVal = a.size_bytes
+        bVal = b.size_bytes
+        break
+      case 'modified':
+        aVal = a.last_modified || 0
+        bVal = b.last_modified || 0
+        break
+      default:
+        return 0
+    }
+    
+    if (aVal < bVal) return isAscending ? -1 : 1
+    if (aVal > bVal) return isAscending ? 1 : -1
+    return 0
+  })
+  
+  renderSpecsTable(sorted)
+  
+  // Update sort indicators
+  document.querySelectorAll('.specs-table th.sortable').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc')
+    if (th.dataset.column === column) {
+      th.classList.add(isAscending ? 'sort-asc' : 'sort-desc')
+    }
+  })
+}
+
+function selectSpec(spec) {
+  // Highlight selected row
+  document.querySelectorAll('.spec-row').forEach(row => {
+    row.classList.remove('selected')
+  })
+  document.querySelector(`[data-spec-id="${spec.id}"]`)?.classList.add('selected')
+  
+  // Update details panel
+  const detailsPanel = document.querySelector('.specs-details-panel')
+  if (!detailsPanel) return
+  
+  detailsPanel.innerHTML = `
+    <div class="spec-details">
+      <div class="details-header">
+        <h3>${escapeHtml(spec.feature)}</h3>
+        <span class="status-badge ${getStatusClass(spec.status)}">${getStatusIcon(spec.status)} ${spec.status}</span>
+      </div>
+      
+      <div class="details-metadata">
+        <div class="metadata-item">
+          <span class="label">Phase:</span>
+          <span class="value">${escapeHtml(spec.phase)}</span>
+        </div>
+        <div class="metadata-item">
+          <span class="label">Created:</span>
+          <span class="value">${formatDate(spec.created)}</span>
+        </div>
+        <div class="metadata-item">
+          <span class="label">Progress:</span>
+          <span class="value">${spec.completed_tasks}/${spec.task_count} tasks</span>
+        </div>
+        <div class="metadata-item">
+          <span class="label">Size:</span>
+          <span class="value">${formatFileSize(spec.size_bytes)}</span>
+        </div>
+      </div>
+      
+      <div class="tasks-section">
+        <h4>Tasks</h4>
+        <div class="tasks-list">
+          ${spec.tasks.map(task => `
+            <div class="task-item ${task.status}">
+              <span class="task-status">${getTaskStatusIcon(task.status)}</span>
+              <div class="task-content">
+                <div class="task-name">${escapeHtml(task.name)}</div>
+                <div class="task-description">${escapeHtml(task.description)}</div>
+                <div class="task-meta">
+                  <span class="task-id">${task.id}</span>
+                  <span class="task-effort">Effort: ${task.effort}</span>
+                  ${task.ux_ui_reviewed ? '<span class="task-reviewed">✓ UX/UI</span>' : ''}
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
+      <div class="quick-actions">
+        <button onclick="openFilePreview('${spec.path}/tasks.json')">View tasks.json</button>
+        <button onclick="openFilePreview('${spec.path}/sdd.md')">View SDD</button>
+      </div>
+    </div>
+  `
+}
+
+// Helper functions
+function getStatusIcon(status) {
+  switch (status) {
+    case 'completed': return '✅'
+    case 'in_progress': return '⏳'
+    case 'pending': return '⭕'
+    default: return '❓'
+  }
+}
+
+function getStatusClass(status) {
+  switch (status) {
+    case 'completed': return 'status-completed'
+    case 'in_progress': return 'status-progress'
+    case 'pending': return 'status-pending'
+    default: return 'status-unknown'
+  }
+}
+
+function getTaskStatusIcon(status) {
+  switch (status) {
+    case 'completed': return '✅'
+    case 'in_progress': return '🔄'
+    case 'pending': return '⭕'
+    default: return '❓'
+  }
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-'
+  const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr
+  if (isNaN(date.getTime())) return dateStr
+  return date.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  })
+}
+
+function formatFileSize(bytes) {
+  if (!bytes || bytes === 0) return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(1024))
+  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`
+}
+
+function debounce(func, wait) {
+  let timeout
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout)
+      func(...args)
+    }
+    clearTimeout(timeout)
+    timeout = setTimeout(later, wait)
   }
 }
 
