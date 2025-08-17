@@ -9,7 +9,9 @@ pub fn run() {
       commands::select_base_dir,
       commands::list_child_directories,
       commands::scan_project,
-      commands::read_file
+      commands::read_file,
+      commands::scan_specs,
+      commands::create_agent_sdd_structure
     ])
     .setup(|app| {
       if cfg!(debug_assertions) {
