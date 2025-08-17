@@ -50,13 +50,17 @@
       "id": "TD-007",
       "name": "Add keyboard shortcuts",
       "description": "Implement ESC key to close modal",
-      "status": "pending"
+      "status": "completed",
+      "completed": "2025-08-17",
+      "ux_ui_reviewed": true
     },
     {
       "id": "TD-008",
       "name": "Enhance markdown rendering",
       "description": "Add support for tables, links, and nested lists",
-      "status": "pending"
+      "status": "completed",
+      "completed": "2025-08-17",
+      "ux_ui_reviewed": true
     }
   ]
 }

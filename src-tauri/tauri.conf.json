@@ -4,7 +4,7 @@
   "productName": "Agent-SDD Electron",
   "version": "0.1.0",
   "build": {
-    "frontendDist": "../"
+    "frontendDist": "../frontend"
   },
   "app": {
     "windows": [

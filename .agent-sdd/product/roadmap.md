@@ -1,10 +1,17 @@
 # Roadmap
 - Phase 0: Already Completed
   - [x] Agent-SDD setup
-- Phase 1: Current Development (Q3 2025)
+- Phase 1: Completed (Q3 2025)
   - [x] Text Display component (Core functionality completed)
+- Phase 2: Current Development (Q1 2025)
+  - [ ] Backend API Commands (Enable file system access)
 
 ## Progress Log
+
+**[2025-01-17] – Started Backend API Commands Phase**
+- **What:** Created specification for Tauri backend implementation
+- **Why:** Frontend UI is complete but non-functional without backend API
+- **Impact:** Will enable full application functionality - directory browsing, project scanning, file viewing
 
 **[2025-08-17] – Completed Text Display Component**
 - **What:** Implemented modal-based text display with markdown rendering
