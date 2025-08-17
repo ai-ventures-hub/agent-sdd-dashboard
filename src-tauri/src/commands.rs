@@ -40,7 +40,7 @@ pub struct FileInfo {
 
 #[tauri::command]
 pub async fn select_base_dir(app: tauri::AppHandle) -> Result<Option<String>, String> {
-    let dialog = app.dialog().file().set_directory_mode(true);
+    let dialog = app.dialog().file().set_directory(true);
     
     match dialog.blocking_pick_folder() {
         Some(folder) => Ok(Some(folder.to_string_lossy().to_string())),
