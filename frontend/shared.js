@@ -1,16 +1,57 @@
 // Helpers
 const $ = (sel) => document.querySelector(sel)
 
-// Import Tauri API
+// Import Tauri API - try multiple methods for Tauri v2
 let invoke;
+
+// Method 1: Try the standard v2 approach
 try {
-  if (window.__TAURI__ && window.__TAURI__.core) {
+  if (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke) {
     invoke = window.__TAURI__.core.invoke;
-  } else {
-    console.error('Tauri API not available. Make sure you are running this in a Tauri app.');
+    console.log('✅ Using __TAURI__.core.invoke');
   }
 } catch (error) {
-  console.error('Error accessing Tauri API:', error);
+  console.log('Method 1 failed:', error);
+}
+
+// Method 2: Try direct invoke if available
+if (!invoke) {
+  try {
+    if (window.__TAURI__ && window.__TAURI__.invoke) {
+      invoke = window.__TAURI__.invoke;
+      console.log('✅ Using __TAURI__.invoke');
+    }
+  } catch (error) {
+    console.log('Method 2 failed:', error);
+  }
+}
+
+// Method 3: Try global invoke
+if (!invoke) {
+  try {
+    if (window.invoke) {
+      invoke = window.invoke;
+      console.log('✅ Using window.invoke');
+    }
+  } catch (error) {
+    console.log('Method 3 failed:', error);
+  }
+}
+
+// Method 4: Try __TAURI_INVOKE__
+if (!invoke) {
+  try {
+    if (window.__TAURI_INVOKE__) {
+      invoke = window.__TAURI_INVOKE__;
+      console.log('✅ Using __TAURI_INVOKE__');
+    }
+  } catch (error) {
+    console.log('Method 4 failed:', error);
+  }
+}
+
+if (!invoke) {
+  console.error('❌ All Tauri API access methods failed. App may not be running in Tauri context.');
 }
 
 let state = {
@@ -126,13 +167,26 @@ async function selectProject(projectPath, name) {
 
 async function chooseBaseDir() {
   try {
-    if (!invoke) {
+    // Try to get invoke function at runtime in case it's injected later
+    let runtimeInvoke = invoke;
+    if (!runtimeInvoke) {
+      // Try to find it again at runtime
+      if (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke) {
+        runtimeInvoke = window.__TAURI__.core.invoke;
+      } else if (window.__TAURI_INVOKE__) {
+        runtimeInvoke = window.__TAURI_INVOKE__;
+      } else if (window.invoke) {
+        runtimeInvoke = window.invoke;
+      }
+    }
+    
+    if (!runtimeInvoke) {
       alert('Tauri API not available. Please run this app through Tauri.');
       return;
     }
     
     console.log('Calling select_base_dir...');
-    const base = await invoke('select_base_dir')
+    const base = await runtimeInvoke('select_base_dir')
     console.log('select_base_dir result:', base);
     
     if (!base) return
@@ -140,7 +194,7 @@ async function chooseBaseDir() {
     document.getElementById('basePath').textContent = base
 
     console.log('Calling list_child_directories with base:', base);
-    const list = await invoke('list_child_directories', { basePath: base })
+    const list = await runtimeInvoke('list_child_directories', { basePath: base })
     console.log('list_child_directories result:', list);
     
     state.projects = list

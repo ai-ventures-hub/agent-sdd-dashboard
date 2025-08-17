@@ -1,14 +1,16 @@
 {
   "phase": "Quick Fix",
   "feature": "Fix Tauri API injection",
-  "status": "pending",
+  "status": "completed",
   "created": "2025-01-17",
   "tasks": [
     {
       "id": "QF-005",
       "name": "Fix Tauri API injection",
       "description": "Fix Tauri API not being available in frontend even when running through cargo tauri dev",
-      "status": "pending",
+      "status": "completed",
+      "completed": "2025-01-17",
+      "ux_ui_reviewed": true,
       "effort": "S"
     }
   ]
