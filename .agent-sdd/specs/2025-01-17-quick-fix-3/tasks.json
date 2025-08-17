@@ -1,14 +1,16 @@
 {
   "phase": "Quick Fix",
   "feature": "Fix dialog API usage errors",
-  "status": "pending",
+  "status": "completed",
   "created": "2025-01-17",
   "tasks": [
     {
       "id": "QF-003",
       "name": "Fix dialog API usage errors",
       "description": "Fix set_directory parameter and FilePath method usage",
-      "status": "pending",
+      "status": "completed",
+      "completed": "2025-01-17",
+      "ux_ui_reviewed": true,
       "effort": "XS"
     }
   ]

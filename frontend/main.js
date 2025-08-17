@@ -1,7 +1,16 @@
 import { state, bindCommon, selectProject } from './shared.js'
 
 // Import Tauri API
-const { invoke } = window.__TAURI__.core
+let invoke;
+try {
+  if (window.__TAURI__ && window.__TAURI__.core) {
+    invoke = window.__TAURI__.core.invoke;
+  } else {
+    console.error('Tauri API not available in main.js');
+  }
+} catch (error) {
+  console.error('Error accessing Tauri API in main.js:', error);
+}
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {

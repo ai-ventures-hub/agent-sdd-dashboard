@@ -2,7 +2,16 @@
 const $ = (sel) => document.querySelector(sel)
 
 // Import Tauri API
-const { invoke } = window.__TAURI__.core
+let invoke;
+try {
+  if (window.__TAURI__ && window.__TAURI__.core) {
+    invoke = window.__TAURI__.core.invoke;
+  } else {
+    console.error('Tauri API not available. Make sure you are running this in a Tauri app.');
+  }
+} catch (error) {
+  console.error('Error accessing Tauri API:', error);
+}
 
 let state = {
   baseDir: null,
@@ -117,16 +126,40 @@ async function selectProject(projectPath, name) {
 
 async function chooseBaseDir() {
   try {
+    if (!invoke) {
+      alert('Tauri API not available. Please run this app through Tauri.');
+      return;
+    }
+    
+    console.log('Calling select_base_dir...');
     const base = await invoke('select_base_dir')
+    console.log('select_base_dir result:', base);
+    
     if (!base) return
     state.baseDir = base
     document.getElementById('basePath').textContent = base
 
+    console.log('Calling list_child_directories with base:', base);
     const list = await invoke('list_child_directories', { basePath: base })
+    console.log('list_child_directories result:', list);
+    
     state.projects = list
     renderProjectsList()
   } catch (error) {
+    console.error('Error in chooseBaseDir:', error);
     alert(`Error: ${error}`)
+  }
+}
+
+function testAPI() {
+  console.log('Testing Tauri API...');
+  console.log('window.__TAURI__:', window.__TAURI__);
+  console.log('invoke function:', invoke);
+  
+  if (invoke) {
+    alert('Tauri API is available! You can now test the directory browser.');
+  } else {
+    alert('Tauri API is NOT available. Check console for details.');
   }
 }
 
@@ -140,6 +173,7 @@ function bindCommon() {
     state.hideSpecs = !!e.target.checked
     if (state.report) renderSections(state.report)
   })
+  document.getElementById('btnTest').addEventListener('click', testAPI)
 }
 
 export { state, bindCommon, selectProject }
