@@ -180,21 +180,6 @@ async function chooseBaseDir() {
   }
 }
 
-async function testAPI() {
-  console.log('Testing Tauri API...');
-  console.log('window.__TAURI__:', window.__TAURI__);
-  console.log('invoke function:', invoke);
-  
-  if (!invoke) {
-    await waitForTauriAPI();
-  }
-  
-  if (invoke) {
-    alert('Tauri API is available! You can now test the directory browser.');
-  } else {
-    alert('Tauri API is NOT available. Check console for details.');
-  }
-}
 
 function bindCommon() {
   document.getElementById('btnChooseBase').addEventListener('click', chooseBaseDir)
@@ -206,7 +191,6 @@ function bindCommon() {
     state.hideSpecs = !!e.target.checked
     if (state.report) renderSections(state.report)
   })
-  document.getElementById('btnTest').addEventListener('click', testAPI)
   
   // Add dropdown selection handler
   document.getElementById('projectsSelect').addEventListener('change', async (e) => {
