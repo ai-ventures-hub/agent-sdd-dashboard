@@ -655,14 +655,14 @@ async function openSpecsManagementPage() {
           <input type="text" id="specs-search" placeholder="Search specs..." />
         </div>
         <div class="toolbar-filters">
-          <select id="phase-filter" class="p-2 bg-app-card border border-app-outline rounded-lg text-app-text text-sm">
+          <select id="phase-filter" class="p-2 bg-[var(--card)] border border-gray-300 rounded-xl text-[var(--text)] text-sm">
             <option value="">All Phases</option>
             <option value="Phase 1">Phase 1</option>
             <option value="Phase 2">Phase 2</option>
             <option value="Phase 3">Phase 3</option>
             <option value="Phase 4">Phase 4</option>
           </select>
-          <select id="status-filter" class="p-2 bg-app-card border border-app-outline rounded-lg text-app-text text-sm">
+          <select id="status-filter" class="p-2 bg-[var(--card)] border border-gray-300 rounded-xl text-[var(--text)] text-sm">
             <option value="">All Status</option>
             <option value="completed">Completed</option>
             <option value="in_progress">In Progress</option>
@@ -877,14 +877,14 @@ async function openSpecsManagementModal() {
             <input type="text" id="specs-search" placeholder="Search specs..." />
           </div>
           <div class="toolbar-filters">
-            <select id="phase-filter" class="p-2 bg-app-card border border-app-outline rounded-lg text-app-text text-sm">
+            <select id="phase-filter" class="p-2 bg-[var(--card)] border border-gray-300 rounded-xl text-[var(--text)] text-sm">
               <option value="">All Phases</option>
               <option value="Phase 1">Phase 1</option>
               <option value="Phase 2">Phase 2</option>
               <option value="Phase 3">Phase 3</option>
               <option value="Phase 4">Phase 4</option>
             </select>
-            <select id="status-filter" class="p-2 bg-app-card border border-app-outline rounded-lg text-app-text text-sm">
+            <select id="status-filter" class="p-2 bg-[var(--card)] border border-gray-300 rounded-xl text-[var(--text)] text-sm">
               <option value="">All Status</option>
               <option value="completed">Completed</option>
               <option value="in_progress">In Progress</option>
