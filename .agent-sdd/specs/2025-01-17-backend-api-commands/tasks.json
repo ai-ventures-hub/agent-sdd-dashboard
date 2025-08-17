@@ -8,7 +8,8 @@
       "id": "BAC-001",
       "name": "Setup Tauri command structure",
       "description": "Create command module and register with Tauri builder",
-      "status": "pending",
+      "status": "completed",
+      "completed": "2025-01-17",
       "dependencies": [],
       "effort": "XS"
     },
