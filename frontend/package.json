@@ -1,0 +1,14 @@
+{
+  "name": "agent-sdd-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Agent SDD Viewer",
+  "scripts": {
+    "build-css": "tailwindcss -i ./styles.css -o ./dist/styles.css --minify",
+    "watch-css": "tailwindcss -i ./styles.css -o ./dist/styles.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.1",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.33"
+  }
+}
