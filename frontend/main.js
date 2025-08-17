@@ -601,6 +601,262 @@ function setupSpecsManagementWindow() {
 }
 
 async function openSpecsManagementWindow() {
+  // Create enhanced specs management page (full-screen within app)
+  openSpecsManagementPage()
+}
+
+async function openSpecsManagementPage() {
+  // Get current project path before hiding main content
+  const projectSelect = document.getElementById('projectsSelect')
+  if (!projectSelect || !projectSelect.value) {
+    alert('Please select a project first before opening Specs Management.')
+    return
+  }
+  
+  const currentProjectPath = projectSelect.value
+  
+  // Replace main content area (keeping sidebar and header visible)
+  const contentSection = document.querySelector('.content')
+  const existingPage = document.getElementById('specs-management-page')
+  
+  if (existingPage) {
+    existingPage.remove()
+  }
+  
+  if (!contentSection) {
+    console.error('Content section not found')
+    return
+  }
+  
+  // Store original content for restoration
+  const originalContent = contentSection.innerHTML
+  
+  // Replace content section with specs management
+  contentSection.innerHTML = `
+    <div id="specs-management-page" class="specs-page-content">
+      <!-- Page Header with Back Button -->
+      <div class="specs-page-header">
+        <button class="back-button" id="specs-back-btn">
+          <span class="back-icon">←</span>
+          <span class="back-text">Back to Project</span>
+        </button>
+        <h1 class="page-title">Specs Management</h1>
+        <div class="page-actions">
+          <button class="btn-primary" id="create-new-spec-btn">
+            <span class="action-icon">➕</span>
+            Create New Spec
+          </button>
+        </div>
+      </div>
+
+      <!-- Toolbar Section -->
+      <div class="specs-toolbar">
+        <div class="toolbar-search">
+          <input type="text" id="specs-search" placeholder="Search specs..." />
+        </div>
+        <div class="toolbar-filters">
+          <select id="phase-filter" class="p-2 bg-app-card border border-app-outline rounded-lg text-app-text text-sm">
+            <option value="">All Phases</option>
+            <option value="Phase 1">Phase 1</option>
+            <option value="Phase 2">Phase 2</option>
+            <option value="Phase 3">Phase 3</option>
+            <option value="Phase 4">Phase 4</option>
+          </select>
+          <select id="status-filter" class="p-2 bg-app-card border border-app-outline rounded-lg text-app-text text-sm">
+            <option value="">All Status</option>
+            <option value="completed">Completed</option>
+            <option value="in_progress">In Progress</option>
+            <option value="pending">Not Started</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Main Content Area with Resizable Splitter -->
+      <div class="specs-layout">
+        <div class="specs-table-container">
+          <table class="specs-table">
+            <thead>
+              <tr>
+                <th class="sortable" data-column="status">Status</th>
+                <th class="sortable" data-column="feature">Feature</th>
+                <th class="sortable" data-column="phase">Phase</th>
+                <th class="sortable" data-column="date">Date</th>
+                <th class="sortable" data-column="progress">Progress</th>
+                <th class="sortable" data-column="effort">Effort</th>
+                <th class="sortable" data-column="modified">Modified</th>
+              </tr>
+            </thead>
+            <tbody id="specs-table-body">
+              <tr>
+                <td colspan="7" class="loading-row">Loading specs...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Resizable Splitter -->
+        <div class="specs-splitter" id="specs-splitter"></div>
+        
+        <div class="specs-details-panel">
+          <div class="details-placeholder">
+            <div class="placeholder-icon">📋</div>
+            <div class="placeholder-text">Select a spec to view details</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+  
+  // Set up back button to restore original content
+  const backBtn = document.getElementById('specs-back-btn')
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      contentSection.innerHTML = originalContent
+    })
+  }
+  
+  // Set up create spec button
+  const createBtn = document.getElementById('create-new-spec-btn')
+  if (createBtn) {
+    createBtn.addEventListener('click', () => {
+      openCreateSpecDialog()
+    })
+  }
+  
+  // Initialize specs management functionality with project path
+  await initializeSpecsPage(currentProjectPath)
+}
+
+async function initializeSpecsPage(projectPath) {
+  // Initialize sorting state
+  let sortState = {
+    column: 'modified',
+    direction: 'desc',
+    data: [],
+    projectPath: projectPath // Store project path in sort state
+  }
+  
+  // Set up table sorting
+  setupTableSorting(sortState)
+  
+  // Set up splitter
+  setupPageSplitter()
+  
+  // Set up search and filters
+  setupPageSearchAndFilters(sortState)
+  
+  // Load specs data
+  await loadSpecsData(sortState)
+}
+
+function setupPageSplitter() {
+  const splitter = document.getElementById('specs-splitter')
+  const container = document.querySelector('.specs-layout')
+  const tableContainer = document.querySelector('.specs-table-container')
+  const detailsPanel = document.querySelector('.specs-details-panel')
+  
+  if (!splitter || !container || !tableContainer || !detailsPanel) {
+    return
+  }
+  
+  // Set table to full width initially and hide splitter/details panel
+  tableContainer.style.width = '100%'
+  detailsPanel.style.display = 'none'
+  splitter.style.display = 'none'
+  
+  let isResizing = false
+  let leftWidth = 100 // percentage - full width initially
+  
+  // Load saved splitter state
+  const savedWidth = localStorage.getItem('specs-splitter-width')
+  if (savedWidth) {
+    leftWidth = parseFloat(savedWidth)
+  }
+  
+  function updateLayout() {
+    tableContainer.style.width = `${leftWidth}%`
+    detailsPanel.style.width = `${100 - leftWidth}%`
+  }
+  
+  splitter.addEventListener('mousedown', (e) => {
+    e.preventDefault()
+    isResizing = true
+    document.body.style.cursor = 'col-resize'
+    
+    function handleMouseMove(e) {
+      if (!isResizing) return
+      
+      const containerRect = container.getBoundingClientRect()
+      const mouseX = e.clientX - containerRect.left
+      const percentage = Math.max(30, Math.min(80, (mouseX / containerRect.width) * 100))
+      
+      leftWidth = percentage
+      updateLayout()
+    }
+    
+    function handleMouseUp() {
+      isResizing = false
+      document.body.style.cursor = ''
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      
+      // Save splitter state
+      localStorage.setItem('specs-splitter-width', leftWidth.toString())
+    }
+    
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  })
+  
+  // Set initial layout
+  updateLayout()
+}
+
+function setupPageSearchAndFilters(sortState) {
+  const searchInput = document.getElementById('specs-search')
+  const phaseFilter = document.getElementById('phase-filter')
+  const statusFilter = document.getElementById('status-filter')
+  
+  let searchTimeout
+  
+  searchInput?.addEventListener('input', () => {
+    clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(() => {
+      renderFilteredSpecs(sortState)
+    }, 300)
+  })
+  
+  phaseFilter?.addEventListener('change', () => renderFilteredSpecs(sortState))
+  statusFilter?.addEventListener('change', () => renderFilteredSpecs(sortState))
+}
+
+function renderFilteredSpecs(sortState) {
+  const searchTerm = document.getElementById('specs-search')?.value.toLowerCase() || ''
+  const phaseFilter = document.getElementById('phase-filter')?.value || ''
+  const statusFilter = document.getElementById('status-filter')?.value || ''
+  
+  let filteredSpecs = sortState.data.filter(spec => {
+    const matchesSearch = !searchTerm || 
+      spec.feature.toLowerCase().includes(searchTerm) ||
+      spec.phase.toLowerCase().includes(searchTerm)
+    
+    const matchesPhase = !phaseFilter || spec.phase === phaseFilter
+    const matchesStatus = !statusFilter || spec.status === statusFilter
+    
+    return matchesSearch && matchesPhase && matchesStatus
+  })
+  
+  // Sort filtered results and render
+  filteredSpecs = sortSpecs(filteredSpecs, sortState.column, sortState.direction)
+  
+  // Temporarily update sort state with filtered data for rendering
+  const originalData = sortState.data
+  sortState.data = filteredSpecs
+  renderSortedSpecs(sortState)
+  sortState.data = originalData // Restore original data for future filtering
+}
+
+async function openSpecsManagementModal() {
   // Create specs management window modal
   const existing = document.getElementById('specs-management-modal')
   if (existing) existing.remove()
@@ -869,13 +1125,11 @@ async function loadSpecsData(sortState) {
       throw new Error('Tauri API not available');
     }
     
-    // Get current project path from the selected project
-    const projectSelect = document.getElementById('projectsSelect')
-    if (!projectSelect || !projectSelect.value) {
-      throw new Error('No project selected');
+    // Get project path from sort state (passed during initialization)
+    const projectPath = sortState.projectPath
+    if (!projectPath) {
+      throw new Error('No project path available');
     }
-    
-    const projectPath = projectSelect.value
     const specs = await invoke('scan_specs', { projectPath })
     
     if (specs.length === 0) {
@@ -937,6 +1191,18 @@ function selectSpecRow(row, spec) {
   
   // Add selection to clicked row
   row.classList.add('selected')
+  
+  // Show details panel and splitter when row is selected
+  const detailsPanel = document.querySelector('.specs-details-panel')
+  const splitter = document.getElementById('specs-splitter')
+  const tableContainer = document.querySelector('.specs-table-container')
+  
+  if (detailsPanel && splitter && tableContainer) {
+    detailsPanel.style.display = 'block'
+    splitter.style.display = 'block'
+    tableContainer.style.width = '60%'
+    detailsPanel.style.width = '40%'
+  }
   
   // Update details panel with enhanced SpecDetailsPanel
   renderSpecDetailsPanel(spec)
@@ -1560,3 +1826,4 @@ function openCreateSpecDialog() {
 // Export for use in shared.js
 window.openFilePreview = openFilePreview
 window.openSpecsManagementWindow = openSpecsManagementWindow
+window.openSpecsManagementModal = openSpecsManagementModal
