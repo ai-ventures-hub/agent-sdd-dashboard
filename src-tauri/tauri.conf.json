@@ -13,9 +13,13 @@
         "title": "Agent SDD",
         "width": 1200,
         "height": 800,
-        "resizable": true
+        "resizable": true,
+        "url": "index.html"
       }
-    ]
+    ],
+    "security": {
+      "csp": "default-src 'self' tauri:; script-src 'self' 'unsafe-inline' tauri:; style-src 'self' 'unsafe-inline'"
+    }
   },
   "bundle": {
     "active": true

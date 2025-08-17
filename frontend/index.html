@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' tauri:; script-src 'self' 'unsafe-inline' tauri:; style-src 'self' 'unsafe-inline'">
   <title>Agent SDD Dashboard</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -41,6 +42,22 @@
     <small>Local-only viewer. Your files never leave your machine.</small>
   </footer>
 
+  <script>
+    // Debug Tauri API availability before modules load
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('DOMContentLoaded - checking Tauri API...');
+      console.log('window.__TAURI__:', window.__TAURI__);
+      console.log('window.__TAURI_INTERNALS__:', window.__TAURI_INTERNALS__);
+      
+      if (window.__TAURI__) {
+        console.log('✅ Tauri API is available');
+        console.log('Available modules:', Object.keys(window.__TAURI__));
+      } else {
+        console.log('❌ Tauri API is NOT available');
+        console.log('This indicates the app is not running in Tauri context');
+      }
+    });
+  </script>
   <script type="module" src="main.js"></script>
 </body>
 </html>
