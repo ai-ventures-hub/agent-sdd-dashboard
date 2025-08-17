@@ -5,6 +5,7 @@
   --text: #e6e6e9;
   --muted: #a3a3aa;
   --accent: #4fae4a;
+  --success: #10b981;
   --danger: #ef4444;
   --error: #ef4444;
   --warning: #f59e0b;
@@ -232,6 +233,87 @@ code{background:#12131a;padding:1px 4px;border-radius:4px;border:1px solid var(-
 .dependencies-list{font-family:ui-monospace,monospace;color:var(--text);}
 
 .task-completed-date{font-size:11px;color:var(--accent);font-family:ui-monospace,monospace;}
+
+/* Quick Actions Bar */
+.quick-actions-bar {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--outline);
+}
+
+.quick-actions-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.quick-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  background: var(--panel);
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 200ms ease-in-out;
+  min-height: 80px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.quick-action-btn:hover {
+  background: var(--card);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.quick-action-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.quick-action-btn .action-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.quick-action-btn .action-label {
+  font-weight: 500;
+  text-align: center;
+}
+
+.quick-action-btn.open-sdd .action-icon {
+  color: var(--accent);
+}
+
+.quick-action-btn.mark-done .action-icon {
+  color: var(--success);
+}
+
+.quick-action-btn.create-spec .action-icon {
+  color: var(--warning);
+}
+
+.quick-action-btn.run-analysis .action-icon {
+  color: #3B82F6;
+}
+
+.quick-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quick-action-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--panel);
+  border-color: var(--outline);
+}
 
 /* Responsive adjustments */
 @media (max-width: 1024px) {

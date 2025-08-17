@@ -940,6 +940,9 @@ function selectSpecRow(row, spec) {
   
   // Update details panel with enhanced SpecDetailsPanel
   renderSpecDetailsPanel(spec)
+  
+  // Attach Quick Actions event handlers
+  attachQuickActionHandlers(spec)
 }
 
 function renderSpecDetailsPanel(spec) {
@@ -1044,6 +1047,9 @@ function renderSpecDetailsPanel(spec) {
           ${renderTaskStatusGroup('Pending', tasksByStatus.pending, 'pending')}
         </div>
       </div>
+
+      <!-- Quick Actions Bar -->
+      ${renderQuickActionsBar(spec)}
     </div>
   `
 }
@@ -1091,6 +1097,39 @@ function getTaskStatusIcon(status) {
     case 'cancelled': return '🚫'
     default: return '❓'
   }
+}
+
+function renderQuickActionsBar(spec) {
+  const hasPendingTasks = spec.tasks.some(task => task.status === 'pending' || task.status === 'in_progress')
+  
+  return `
+    <div class="quick-actions-bar">
+      <h4 class="section-title">Quick Actions</h4>
+      <div class="quick-actions-buttons">
+        <button class="quick-action-btn open-sdd" data-spec-path="${escapeHtml(spec.path)}" title="Open spec's SDD document">
+          <span class="action-icon">📄</span>
+          <span class="action-label">Open SDD</span>
+        </button>
+        
+        ${hasPendingTasks ? `
+          <button class="quick-action-btn mark-done" data-spec-id="${escapeHtml(spec.id)}" title="Mark next pending task as done">
+            <span class="action-icon">✅</span>
+            <span class="action-label">Mark Task Done</span>
+          </button>
+        ` : ''}
+        
+        <button class="quick-action-btn create-spec" data-project-path="${escapeHtml(spec.projectPath || '')}" title="Create a new spec">
+          <span class="action-icon">➕</span>
+          <span class="action-label">Create Spec</span>
+        </button>
+        
+        <button class="quick-action-btn run-analysis" data-spec-path="${escapeHtml(spec.path)}" title="Run spec analysis">
+          <span class="action-icon">🔍</span>
+          <span class="action-label">Run Analysis</span>
+        </button>
+      </div>
+    </div>
+  `
 }
 
 function createTaskProgressIndicator(tasks) {
@@ -1160,6 +1199,167 @@ function createTaskProgressIndicator(tasks) {
       </div>
     </div>
   `
+}
+
+function attachQuickActionHandlers(spec) {
+  // Wait for DOM to update
+  setTimeout(() => {
+    // Open SDD button
+    const openSddBtn = document.querySelector('.quick-action-btn.open-sdd')
+    if (openSddBtn) {
+      openSddBtn.addEventListener('click', async () => {
+        const sddPath = spec.path.replace('tasks.json', 'sdd.md')
+        try {
+          await openFilePreview(sddPath)
+        } catch (error) {
+          console.error('Failed to open SDD:', error)
+          alert('Failed to open SDD document. The file may not exist.')
+        }
+      })
+    }
+    
+    // Mark Task Done button
+    const markDoneBtn = document.querySelector('.quick-action-btn.mark-done')
+    if (markDoneBtn) {
+      markDoneBtn.addEventListener('click', async () => {
+        const nextPendingTask = spec.tasks.find(task => 
+          task.status === 'pending' || task.status === 'in_progress'
+        )
+        
+        if (nextPendingTask) {
+          const confirmMsg = `Mark task "${nextPendingTask.name}" as completed?`
+          if (confirm(confirmMsg)) {
+            await markTaskAsCompleted(spec, nextPendingTask)
+          }
+        }
+      })
+    }
+    
+    // Create Spec button
+    const createSpecBtn = document.querySelector('.quick-action-btn.create-spec')
+    if (createSpecBtn) {
+      createSpecBtn.addEventListener('click', () => {
+        // Open create spec dialog
+        const specName = prompt('Enter new spec name:')
+        if (specName) {
+          // This would call /sdd-create-spec command
+          alert(`Creating spec: ${specName}\n(This would normally call /sdd-create-spec)`)
+        }
+      })
+    }
+    
+    // Run Analysis button
+    const runAnalysisBtn = document.querySelector('.quick-action-btn.run-analysis')
+    if (runAnalysisBtn) {
+      runAnalysisBtn.addEventListener('click', async () => {
+        try {
+          // Get invoke from global scope
+          if (!invoke && window.__TAURI__ && window.__TAURI__.core) {
+            invoke = window.__TAURI__.core.invoke;
+          }
+          
+          if (!invoke) {
+            throw new Error('Tauri API not available');
+          }
+          
+          // Run analysis command
+          const analysisResult = await invoke('analyze_spec', { specPath: spec.path })
+          
+          // Display results in a modal
+          displayAnalysisResults(spec, analysisResult)
+        } catch (error) {
+          console.error('Failed to run analysis:', error)
+          alert('Failed to run spec analysis. Please check the console for details.')
+        }
+      })
+    }
+  }, 100)
+}
+
+async function markTaskAsCompleted(spec, task) {
+  try {
+    // Get invoke from global scope
+    if (!invoke && window.__TAURI__ && window.__TAURI__.core) {
+      invoke = window.__TAURI__.core.invoke;
+    }
+    
+    if (!invoke) {
+      throw new Error('Tauri API not available');
+    }
+    
+    // Update task status in tasks.json
+    task.status = 'completed'
+    task.completed = new Date().toISOString().split('T')[0]
+    
+    await invoke('update_task_status', { 
+      specPath: spec.path,
+      taskId: task.id,
+      status: 'completed',
+      completedDate: task.completed
+    })
+    
+    // Refresh the specs data
+    const sortState = {
+      column: 'modified',
+      direction: 'desc',
+      data: []
+    }
+    await loadSpecsData(sortState)
+    
+    // Re-select the current spec to refresh details
+    const updatedSpec = sortState.data.find(s => s.id === spec.id)
+    if (updatedSpec) {
+      const row = document.querySelector(`tr[data-spec-id="${spec.id}"]`)
+      if (row) {
+        selectSpecRow(row, updatedSpec)
+      }
+    }
+    
+    alert(`Task "${task.name}" marked as completed!`)
+  } catch (error) {
+    console.error('Failed to update task status:', error)
+    alert('Failed to update task status. Please check the console for details.')
+  }
+}
+
+function displayAnalysisResults(spec, results) {
+  // Create modal for analysis results
+  const existing = document.getElementById('analysis-results-modal')
+  if (existing) existing.remove()
+  
+  const modal = document.createElement('div')
+  modal.id = 'analysis-results-modal'
+  modal.className = 'text-display-modal'
+  modal.innerHTML = `
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Analysis Results: ${spec.feature}</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="analysis-results">
+          <h4>Spec Analysis</h4>
+          <pre>${escapeHtml(JSON.stringify(results, null, 2))}</pre>
+        </div>
+      </div>
+    </div>
+  `
+  document.body.appendChild(modal)
+  
+  // Close handlers
+  const closeModal = () => modal.remove()
+  modal.querySelector('.modal-backdrop').addEventListener('click', closeModal)
+  modal.querySelector('.modal-close').addEventListener('click', closeModal)
+  
+  // ESC key handler
+  const handleEscKey = (e) => {
+    if (e.key === 'Escape' || e.keyCode === 27) {
+      closeModal()
+      document.removeEventListener('keydown', handleEscKey)
+    }
+  }
+  document.addEventListener('keydown', handleEscKey)
 }
 
 // Export for use in shared.js
