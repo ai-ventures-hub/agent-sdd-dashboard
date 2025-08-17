@@ -1,16 +1,7 @@
 import { state, bindCommon, selectProject } from './shared.js'
 
-// Import Tauri API
+// Get invoke function from shared.js
 let invoke;
-try {
-  if (window.__TAURI__ && window.__TAURI__.core) {
-    invoke = window.__TAURI__.core.invoke;
-  } else {
-    console.error('Tauri API not available in main.js');
-  }
-} catch (error) {
-  console.error('Error accessing Tauri API in main.js:', error);
-}
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
@@ -69,6 +60,15 @@ async function openFilePreview(filePath) {
   
   // Load file content
   try {
+    // Get invoke from global scope - it should be available by now
+    if (!invoke && window.__TAURI__ && window.__TAURI__.core) {
+      invoke = window.__TAURI__.core.invoke;
+    }
+    
+    if (!invoke) {
+      throw new Error('Tauri API not available');
+    }
+    
     const content = await invoke('read_file', { filePath })
     const bodyEl = modal.querySelector('.modal-body')
     

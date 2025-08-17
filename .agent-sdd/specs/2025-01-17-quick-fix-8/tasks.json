@@ -1,0 +1,15 @@
+{
+  "phase": "Quick Fix",
+  "feature": "Fix Tauri v2 API initialization",
+  "status": "pending",
+  "created": "2025-01-17",
+  "tasks": [
+    {
+      "id": "QF-008",
+      "name": "Fix Tauri v2 API initialization",
+      "description": "Tauri API is not available - need proper v2 initialization sequence",
+      "status": "pending",
+      "effort": "M"
+    }
+  ]
+}

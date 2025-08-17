@@ -19,7 +19,8 @@
     ],
     "security": {
       "csp": "default-src * 'unsafe-inline' 'unsafe-eval' data: blob: tauri: ipc:; connect-src * tauri: ipc:; script-src * 'unsafe-inline' 'unsafe-eval' tauri:; style-src * 'unsafe-inline'"
-    }
+    },
+    "withGlobalTauri": true
   },
   "bundle": {
     "active": true
