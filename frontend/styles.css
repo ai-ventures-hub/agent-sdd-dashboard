@@ -153,6 +153,64 @@ code{background:#12131a;padding:1px 4px;border-radius:4px;border:1px solid var(-
 .effort-badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:500;background:var(--panel);border:1px solid var(--outline);}
 .date-text{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted);}
 
+/* Enhanced Spec Details Panel */
+.spec-details-content{padding:16px;height:100%;overflow-y:auto;}
+
+.spec-details-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--outline);}
+.spec-details-title{margin:0;font-size:18px;color:var(--text);font-weight:600;}
+.spec-status-badge{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;}
+.spec-status-badge.completed{background:rgba(79,174,74,0.15);color:var(--accent);border:1px solid var(--accent);}
+.spec-status-badge.in_progress{background:rgba(245,158,11,0.15);color:var(--warning);border:1px solid var(--warning);}
+.spec-status-badge.pending{background:rgba(163,163,170,0.15);color:var(--muted);border:1px solid var(--muted);}
+
+.section-title{font-size:14px;font-weight:600;color:var(--text);margin:0 0 12px 0;display:flex;align-items:center;}
+.section-title::before{content:'';width:3px;height:16px;background:var(--accent);margin-right:8px;border-radius:2px;}
+
+.spec-overview-section{margin-bottom:24px;}
+.spec-metadata{display:grid;gap:8px;}
+.metadata-item{display:flex;align-items:center;padding:8px 12px;background:var(--panel);border-radius:6px;}
+.metadata-label{font-size:13px;color:var(--muted);min-width:80px;font-weight:500;}
+.metadata-value{font-size:13px;color:var(--text);margin-left:auto;}
+.metadata-value.spec-path{font-family:ui-monospace,monospace;font-size:11px;color:var(--muted);word-break:break-all;}
+
+.spec-progress-section{margin-bottom:24px;}
+.progress-metrics{display:grid;gap:16px;}
+.progress-metric{background:var(--panel);padding:12px;border-radius:8px;}
+.progress-metric-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.progress-metric-label{font-size:13px;color:var(--muted);font-weight:500;}
+.progress-metric-value{font-size:13px;color:var(--text);font-family:ui-monospace,monospace;}
+.progress-bar{width:100%;height:6px;background:var(--card);border-radius:3px;overflow:hidden;margin-bottom:4px;}
+.progress-fill{height:100%;background:var(--accent);transition:width 0.3s ease;border-radius:3px;}
+.progress-fill.effort-fill{background:var(--warning);}
+.progress-percentage{font-size:11px;color:var(--muted);text-align:right;font-family:ui-monospace,monospace;}
+
+.spec-tasks-section{margin-bottom:16px;}
+.task-status-groups{display:grid;gap:16px;}
+.task-status-group{background:var(--panel);border-radius:8px;overflow:hidden;}
+.task-group-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--outline);}
+.task-group-title{font-size:14px;font-weight:600;color:var(--text);}
+.task-group-count{font-size:12px;color:var(--muted);background:var(--panel);padding:2px 6px;border-radius:4px;}
+
+.task-list{padding:8px;}
+.task-item{margin-bottom:8px;padding:10px;background:var(--card);border-radius:6px;border-left:3px solid transparent;}
+.task-item.completed{border-left-color:var(--accent);}
+.task-item.in_progress{border-left-color:var(--warning);}
+.task-item.pending{border-left-color:var(--muted);}
+.task-item:last-child{margin-bottom:0;}
+
+.task-item-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.task-status-icon{font-size:14px;width:16px;text-align:center;}
+.task-name{font-size:13px;font-weight:500;color:var(--text);flex:1;}
+.task-effort{font-size:10px;padding:2px 4px;}
+
+.task-description{font-size:12px;color:var(--muted);line-height:1.4;margin-bottom:6px;}
+
+.task-dependencies{font-size:11px;color:var(--muted);margin-bottom:4px;}
+.dependencies-label{color:var(--muted);margin-right:4px;}
+.dependencies-list{font-family:ui-monospace,monospace;color:var(--text);}
+
+.task-completed-date{font-size:11px;color:var(--accent);font-family:ui-monospace,monospace;}
+
 /* Responsive adjustments */
 @media (max-width: 1024px) {
   .specs-layout{grid-template-columns:1fr;grid-template-rows:1fr 1fr;}

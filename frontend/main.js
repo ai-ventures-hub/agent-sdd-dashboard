@@ -938,32 +938,152 @@ function selectSpecRow(row, spec) {
   // Add selection to clicked row
   row.classList.add('selected')
   
-  // Update details panel (placeholder for now - will be implemented in SMW-005)
+  // Update details panel with enhanced SpecDetailsPanel
+  renderSpecDetailsPanel(spec)
+}
+
+function renderSpecDetailsPanel(spec) {
   const detailsPanel = document.querySelector('.specs-details-panel')
-  if (detailsPanel) {
-    detailsPanel.innerHTML = `
-      <div style="padding: 16px;">
-        <h3 style="margin: 0 0 16px; color: var(--text);">${escapeHtml(spec.feature)}</h3>
-        <div style="margin-bottom: 12px;">
-          <strong>Phase:</strong> ${escapeHtml(spec.phase)}
-        </div>
-        <div style="margin-bottom: 12px;">
-          <strong>Status:</strong> ${getStatusIcon(spec.status)} ${escapeHtml(spec.status)}
-        </div>
-        <div style="margin-bottom: 12px;">
-          <strong>Progress:</strong> ${spec.completed_tasks}/${spec.task_count} tasks completed
-        </div>
-        <div style="margin-bottom: 12px;">
-          <strong>Created:</strong> ${escapeHtml(spec.created)}
-        </div>
-        <div style="margin-bottom: 16px;">
-          <strong>Path:</strong> <code style="word-break: break-all;">${escapeHtml(spec.path)}</code>
-        </div>
-        <div style="color: var(--muted); font-style: italic;">
-          Detailed view coming in SMW-005 (Details Panel)
+  if (!detailsPanel) return
+  
+  // Calculate progress metrics
+  const progressPercent = spec.task_count > 0 
+    ? Math.round((spec.completed_tasks / spec.task_count) * 100) 
+    : 0
+  
+  const totalEffort = spec.tasks.reduce((sum, task) => sum + getEffortValue(task.effort), 0)
+  const completedEffort = spec.tasks
+    .filter(task => task.status === 'completed')
+    .reduce((sum, task) => sum + getEffortValue(task.effort), 0)
+  
+  const effortProgress = totalEffort > 0 ? Math.round((completedEffort / totalEffort) * 100) : 0
+  
+  // Group tasks by status
+  const tasksByStatus = {
+    completed: spec.tasks.filter(t => t.status === 'completed'),
+    pending: spec.tasks.filter(t => t.status === 'pending'),
+    in_progress: spec.tasks.filter(t => t.status === 'in_progress')
+  }
+  
+  detailsPanel.innerHTML = `
+    <div class="spec-details-content">
+      <!-- Header Section -->
+      <div class="spec-details-header">
+        <h3 class="spec-details-title">${escapeHtml(spec.feature)}</h3>
+        <div class="spec-status-badge ${spec.status}">
+          <span class="status-icon">${getStatusIcon(spec.status)}</span>
+          <span class="status-text">${escapeHtml(spec.status.replace('_', ' ').toUpperCase())}</span>
         </div>
       </div>
-    `
+
+      <!-- Spec Overview Section -->
+      <div class="spec-overview-section">
+        <h4 class="section-title">Spec Overview</h4>
+        <div class="spec-metadata">
+          <div class="metadata-item">
+            <span class="metadata-label">Phase:</span>
+            <span class="metadata-value">${escapeHtml(spec.phase)}</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">Created:</span>
+            <span class="metadata-value">${escapeHtml(spec.created)}</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">Total Effort:</span>
+            <span class="metadata-value effort-badge">${getEffortLabel(totalEffort)}</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">Tasks:</span>
+            <span class="metadata-value">${spec.task_count} total</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">Path:</span>
+            <span class="metadata-value spec-path">${escapeHtml(spec.path)}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Section -->
+      <div class="spec-progress-section">
+        <h4 class="section-title">Task Progress</h4>
+        <div class="progress-metrics">
+          <div class="progress-metric">
+            <div class="progress-metric-header">
+              <span class="progress-metric-label">Tasks Completed</span>
+              <span class="progress-metric-value">${spec.completed_tasks}/${spec.task_count}</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${progressPercent}%"></div>
+            </div>
+            <div class="progress-percentage">${progressPercent}%</div>
+          </div>
+          
+          <div class="progress-metric">
+            <div class="progress-metric-header">
+              <span class="progress-metric-label">Effort Completed</span>
+              <span class="progress-metric-value">${completedEffort}/${totalEffort} points</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill effort-fill" style="width: ${effortProgress}%"></div>
+            </div>
+            <div class="progress-percentage">${effortProgress}%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task Status Breakdown -->
+      <div class="spec-tasks-section">
+        <h4 class="section-title">Task Breakdown</h4>
+        <div class="task-status-groups">
+          ${renderTaskStatusGroup('Completed', tasksByStatus.completed, 'completed')}
+          ${tasksByStatus.in_progress.length > 0 ? renderTaskStatusGroup('In Progress', tasksByStatus.in_progress, 'in_progress') : ''}
+          ${renderTaskStatusGroup('Pending', tasksByStatus.pending, 'pending')}
+        </div>
+      </div>
+    </div>
+  `
+}
+
+function renderTaskStatusGroup(title, tasks, status) {
+  if (tasks.length === 0) return ''
+  
+  return `
+    <div class="task-status-group">
+      <div class="task-group-header">
+        <span class="task-group-title">${title}</span>
+        <span class="task-group-count">${tasks.length}</span>
+      </div>
+      <div class="task-list">
+        ${tasks.map(task => `
+          <div class="task-item ${status}">
+            <div class="task-item-header">
+              <span class="task-status-icon">${getTaskStatusIcon(task.status)}</span>
+              <span class="task-name">${escapeHtml(task.name)}</span>
+              <span class="task-effort effort-badge">${escapeHtml(task.effort)}</span>
+            </div>
+            <div class="task-description">${escapeHtml(task.description)}</div>
+            ${task.dependencies && task.dependencies.length > 0 ? 
+              `<div class="task-dependencies">
+                <span class="dependencies-label">Depends on:</span>
+                <span class="dependencies-list">${task.dependencies.join(', ')}</span>
+              </div>` : ''
+            }
+            ${task.completed ? 
+              `<div class="task-completed-date">Completed: ${task.completed}</div>` : ''
+            }
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `
+}
+
+function getTaskStatusIcon(status) {
+  switch (status) {
+    case 'completed': return '✅'
+    case 'in_progress': return '⏳'
+    case 'pending': return '⭕'
+    default: return '❓'
   }
 }
 
