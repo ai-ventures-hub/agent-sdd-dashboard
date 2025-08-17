@@ -17,14 +17,16 @@
       "id": "BAC-002",
       "name": "Implement select_base_dir",
       "description": "Native file dialog for directory selection",
-      "status": "pending",
+      "status": "completed",
+      "completed": "2025-08-17",
       "dependencies": ["BAC-001"],
-      "effort": "S"
+      "effort": "S",
+      "ux_ui_reviewed": true
     },
     {
       "id": "BAC-003",
       "name": "Implement list_child_directories",
-      "description": "List subdirectories with filtering",
+      "description": "List subdirectories in select field with filtering",
       "status": "pending",
       "dependencies": ["BAC-001"],
       "effort": "S"

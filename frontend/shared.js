@@ -50,19 +50,20 @@ function bytesToHuman(n){ if(!n) return '0 B'; const u=['B','KB','MB','GB','TB']
 function timeAgo(ms){ if(!ms) return '—'; const d=Date.now()-ms; const m=Math.floor(d/60000); if(m<1) return 'just now'; if(m<60) return `${m}m ago`; const h=Math.floor(m/60); if(h<24) return `${h}h ago`; const days=Math.floor(h/24); return `${days}d ago` }
 
 function renderProjectsList() {
-  const ul = document.getElementById('projectsList')
-  ul.innerHTML = ''
+  const select = document.getElementById('projectsSelect')
+  // Clear existing options except the first one
+  select.innerHTML = '<option value="">Select a project...</option>'
+  
   state.projects.forEach((p) => {
-    const li = document.createElement('li')
-    const name = document.createElement('div')
-    name.className = 'name'
-    name.textContent = p.name
-    const btn = document.createElement('button')
-    btn.textContent = 'Open'
-    btn.addEventListener('click', () => selectProject(p.full_path, p.name))
-    li.appendChild(name); li.appendChild(btn)
-    ul.appendChild(li)
+    const option = document.createElement('option')
+    option.value = p.full_path
+    option.textContent = p.name
+    option.dataset.projectName = p.name
+    select.appendChild(option)
   })
+  
+  // Enable the dropdown if there are projects
+  select.disabled = state.projects.length === 0
 }
 
 function renderSummary(report) {
@@ -206,6 +207,16 @@ function bindCommon() {
     if (state.report) renderSections(state.report)
   })
   document.getElementById('btnTest').addEventListener('click', testAPI)
+  
+  // Add dropdown selection handler
+  document.getElementById('projectsSelect').addEventListener('change', async (e) => {
+    const selectedPath = e.target.value
+    if (selectedPath) {
+      const selectedOption = e.target.selectedOptions[0]
+      const projectName = selectedOption.dataset.projectName
+      await selectProject(selectedPath, projectName)
+    }
+  })
 }
 
 export { state, bindCommon, selectProject }

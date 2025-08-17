@@ -68,10 +68,14 @@ pub async fn list_child_directories(base_path: String) -> Result<Vec<DirectoryIn
                             if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
                                 // Skip hidden directories
                                 if !name.starts_with('.') {
-                                    directories.push(DirectoryInfo {
-                                        name: name.to_string(),
-                                        full_path: path.to_string_lossy().to_string(),
-                                    });
+                                    // Only include directories that have .agent-sdd subdirectory
+                                    let agent_sdd_path = path.join(".agent-sdd");
+                                    if agent_sdd_path.exists() && agent_sdd_path.is_dir() {
+                                        directories.push(DirectoryInfo {
+                                            name: name.to_string(),
+                                            full_path: path.to_string_lossy().to_string(),
+                                        });
+                                    }
                                 }
                             }
                         }
@@ -98,6 +102,12 @@ pub async fn scan_project(project_path: String) -> Result<ProjectReport, String>
     let project_dir = Path::new(&project_path);
     let agent_sdd_dir = project_dir.join(".agent-sdd");
     
+    log::info!("Scanning project at: '{}'", project_path);
+    log::info!("Project dir resolved to: '{}'", project_dir.display());
+    log::info!("Looking for .agent-sdd at: '{}'", agent_sdd_dir.display());
+    log::info!("Agent SDD path exists: {}", agent_sdd_dir.exists());
+    log::info!("Agent SDD path is_dir: {}", agent_sdd_dir.is_dir());
+    
     let has_agent_sdd = agent_sdd_dir.exists() && agent_sdd_dir.is_dir();
     
     let mut sections = std::collections::HashMap::new();
@@ -113,7 +123,16 @@ pub async fn scan_project(project_path: String) -> Result<ProjectReport, String>
             sections.insert(section_name.to_string(), section_info);
         }
     } else {
-        warnings.push("No .agent-sdd directory found".to_string());
+        let exists = agent_sdd_dir.exists();
+        let is_dir = agent_sdd_dir.is_dir();
+        
+        if !exists {
+            warnings.push(format!("Path does not exist: {}", agent_sdd_dir.display()));
+        } else if !is_dir {
+            warnings.push(format!("Path exists but is not a directory: {}", agent_sdd_dir.display()));
+        } else {
+            warnings.push(format!("Unexpected: path exists and is directory but has_agent_sdd is false: {}", agent_sdd_dir.display()));
+        }
     }
     
     Ok(ProjectReport {

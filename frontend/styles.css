@@ -21,10 +21,9 @@ button[disabled]{opacity:.6;cursor:not-allowed;}
 .sidebar{border-right:1px solid var(--outline);padding:16px;background:var(--panel);}
 .sidebar h2{margin:0 0 8px;font-size:14px;color:var(--muted);}
 .muted{color:var(--muted);font-size:12px;margin-bottom:8px;}
-#projectsList{list-style:none;padding:0;margin:0;display:grid;gap:6px;}
-#projectsList li{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;}
-#projectsList li button{font-size:12px;padding:6px 8px;}
-#projectsList .name{padding:8px;background:var(--card);border:1px solid var(--outline);border-radius:8px;}
+#projectsSelect{width:100%;padding:8px;background:var(--card);border:1px solid var(--outline);border-radius:8px;color:var(--text);font-size:14px;}
+#projectsSelect:disabled{opacity:0.6;cursor:not-allowed;}
+#projectsSelect option{background:var(--card);color:var(--text);}
 .content{padding:20px;}
 .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px;}
 .card{background:var(--card);border:1px solid var(--outline);border-radius:12px;padding:14px;}
