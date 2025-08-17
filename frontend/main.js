@@ -1184,10 +1184,10 @@ async function loadSpecsData(sortState) {
 
 function getStatusIcon(status) {
   switch (status) {
-    case 'completed': return '✅'
-    case 'in_progress': return '⏳'
-    case 'pending': return '⭕'
-    default: return '❓'
+    case 'completed': return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>'
+    case 'in_progress': return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>'
+    case 'pending': return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle"><circle cx="12" cy="12" r="10"/></svg>'
+    default: return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-help-circle"><circle cx="12" cy="12" r="10"/><path d="m9 9 1.5 1.5L15 7"/></svg>'
   }
 }
 
@@ -1388,12 +1388,12 @@ function renderTaskStatusGroup(title, tasks, status) {
 
 function getTaskStatusIcon(status) {
   switch (status) {
-    case 'completed': return '✅'
-    case 'in_progress': return '⏳'
-    case 'pending': return '⭕'
-    case 'blocked': return '❌'
-    case 'cancelled': return '🚫'
-    default: return '❓'
+    case 'completed': return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>'
+    case 'in_progress': return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>'
+    case 'pending': return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle"><circle cx="12" cy="12" r="10"/></svg>'
+    case 'blocked': return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-circle"><path d="m15 9-6 6"/><path d="m9 9 6 6"/><circle cx="12" cy="12" r="10"/></svg>'
+    case 'cancelled': return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ban"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>'
+    default: return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-help-circle"><circle cx="12" cy="12" r="10"/><path d="m9 9 1.5 1.5L15 7"/></svg>'
   }
 }
 
@@ -1468,28 +1468,28 @@ function createTaskProgressIndicator(tasks) {
       <div class="progress-indicator-legend">
         ${statusCounts.completed > 0 ? `
           <div class="legend-item">
-            <span class="legend-icon">✅</span>
+            <span class="legend-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></span>
             <span class="legend-label">Completed</span>
             <span class="legend-count">${statusCounts.completed}</span>
           </div>
         ` : ''}
         ${statusCounts.in_progress > 0 ? `
           <div class="legend-item">
-            <span class="legend-icon">⏳</span>
+            <span class="legend-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></span>
             <span class="legend-label">In Progress</span>
             <span class="legend-count">${statusCounts.in_progress}</span>
           </div>
         ` : ''}
         ${statusCounts.pending > 0 ? `
           <div class="legend-item">
-            <span class="legend-icon">⭕</span>
+            <span class="legend-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle"><circle cx="12" cy="12" r="10"/></svg></span>
             <span class="legend-label">Pending</span>
             <span class="legend-count">${statusCounts.pending}</span>
           </div>
         ` : ''}
         ${statusCounts.blocked > 0 ? `
           <div class="legend-item">
-            <span class="legend-icon">❌</span>
+            <span class="legend-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-circle"><path d="m15 9-6 6"/><path d="m9 9 6 6"/><circle cx="12" cy="12" r="10"/></svg></span>
             <span class="legend-label">Blocked</span>
             <span class="legend-count">${statusCounts.blocked}</span>
           </div>
