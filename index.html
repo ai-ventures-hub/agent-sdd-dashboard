@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent SDD Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Agent SDD Viewer (Tauri)</h1>
+    <div class="actions">
+      <button id="btnChooseBase">Choose Base Directory</button>
+      <button id="btnRefresh" disabled>Refresh</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="sidebar">
+      <h2>Projects</h2>
+      <div id="basePath" class="muted"></div>
+      <ul id="projectsList"></ul>
+    </section>
+
+    <section class="content">
+      <div id="projectTitle"></div>
+      <div id="summary" class="cards"></div>
+
+      <div class="controls">
+        <label><input type="checkbox" id="toggleHideSpecs" checked /> Hide files under <code>.agent-sdd/specs</code></label>
+        <label id="autoRefreshWrap" style="display:none;margin-left:12px;"><input type="checkbox" id="toggleAuto" /> Auto-refresh (5s)</label>
+      </div>
+
+      <div id="sections"></div>
+      <div id="warnings"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <small>Local-only viewer. Your files never leave your machine.</small>
+  </footer>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
