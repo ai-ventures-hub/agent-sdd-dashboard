@@ -106,21 +106,21 @@ function renderSections(report) {
     `
 
     const body = document.createElement('div')
-    body.className = 'body'
+    body.className = 'border border-t-0 border-app-outline bg-app-card p-3 rounded-b-lg'
     if (shouldHide) {
       body.innerHTML = '<em>Hidden (toggle above)</em>'
     } else {
       const table = document.createElement('table')
-      table.className = 'filelist'
-      table.innerHTML = '<thead><tr><th>File</th><th>Size</th><th>Modified</th></tr></thead>'
+      table.className = 'w-full border-collapse text-xs'
+      table.innerHTML = '<thead><tr><th class="text-left p-2 border-b border-app-outline">File</th><th class="text-left p-2 border-b border-app-outline">Size</th><th class="text-left p-2 border-b border-app-outline">Modified</th></tr></thead>'
       const tbody = document.createElement('tbody')
       ;(sec.files || []).forEach((f) => {
         const tr = document.createElement('tr')
         const isViewable = f.rel_path.endsWith('.md') || f.rel_path.endsWith('.json') || f.rel_path.endsWith('.txt')
         tr.innerHTML = `
-          <td>${isViewable ? `<a href="#" class="file-link" data-path="${f.full_path}">${f.rel_path}</a>` : f.rel_path}</td>
-          <td>${bytesToHuman(f.size)}</td>
-          <td>${timeAgo(f.mtime)}</td>
+          <td class="text-left p-2 border-b border-app-outline">${isViewable ? `<a href="#" class="file-link cursor-pointer text-app-accent hover:underline" data-path="${f.full_path}">${f.rel_path}</a>` : f.rel_path}</td>
+          <td class="text-left p-2 border-b border-app-outline">${bytesToHuman(f.size)}</td>
+          <td class="text-left p-2 border-b border-app-outline">${timeAgo(f.mtime)}</td>
         `
         tbody.appendChild(tr)
       })

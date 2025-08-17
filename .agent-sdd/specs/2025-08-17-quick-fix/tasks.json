@@ -1,19 +1,55 @@
 {
   "id": "2025-08-17-quick-fix",
-  "feature": "Remove Test API Button",
+  "feature": "Quick Fixes for UI Issues",
   "phase": "Phase 1",
   "created": "2025-08-17",
-  "status": "completed",
+  "status": "in-progress",
   "tasks": [
     {
-      "id": "remove-test-api-button",
-      "name": "Remove Test API action button from header",
-      "description": "Remove the Test API button from the application header as it is no longer needed",
+      "id": "fix-select-fields-styling",
+      "name": "Fix select fields styling with proper Tailwind classes",
+      "description": "Select fields have weird styling. Check the styles and make sure we are using tailwind styling",
+      "status": "completed",
+      "effort": "S",
+      "dependencies": [],
+      "ux_ui_reviewed": true,
+      "files_modified": ["styles.css"],
+      "completed": "2025-08-17"
+    },
+    {
+      "id": "fix-button-styling",
+      "name": "Fix Agent-SDD Installer Wizard button styling",
+      "description": "Make sure all the buttons are using tailwind button component. Buttons in the Agent-SDD Installer Wizard are unstyled",
+      "status": "completed",
+      "effort": "S",
+      "dependencies": [],
+      "ux_ui_reviewed": true,
+      "files_modified": ["frontend/main.js", "frontend/styles.css"],
+      "created": "2025-08-17",
+      "completed": "2025-08-17"
+    },
+    {
+      "id": "fix-table-click-handlers",
+      "name": "Fix table click handlers in specs management",
+      "description": "Clicking on any table item in the specs management is no longer opening up the details. Need to investigate and fix the click event handlers for table rows in the specs management interface.",
       "status": "completed",
       "effort": "XS",
       "dependencies": [],
       "ux_ui_reviewed": true,
+      "files_modified": ["frontend/main.js"],
+      "created": "2025-08-17",
       "completed": "2025-08-17"
+    },
+    {
+      "id": "add-tailwind-table-classes",
+      "name": "Add Tailwind table classes to all table divs",
+      "description": "Apply comprehensive Tailwind table classes to all table elements throughout the application for consistent styling",
+      "status": "in-progress",
+      "effort": "S",
+      "dependencies": [],
+      "ux_ui_reviewed": false,
+      "files_modified": [],
+      "created": "2025-08-17"
     }
   ]
 }
