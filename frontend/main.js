@@ -35,7 +35,16 @@ async function openFilePreview(filePath) {
   
   const modal = document.createElement('div')
   modal.id = 'text-display-modal'
-  modal.className = 'fixed inset-0 z-50 flex items-center justify-center'
+  modal.className = 'fixed inset-0 z-[1001] flex items-center justify-center'
+  modal.style.position = 'fixed'
+  modal.style.top = '0'
+  modal.style.left = '0'
+  modal.style.width = '100vw'
+  modal.style.height = '100vh'
+  modal.style.zIndex = '1001'
+  modal.style.display = 'flex'
+  modal.style.alignItems = 'center'
+  modal.style.justifyContent = 'center'
   modal.innerHTML = `
     <div class="absolute inset-0 bg-black bg-opacity-50"></div>
     <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] mx-4">
@@ -318,7 +327,16 @@ async function openInstallerWizard() {
   
   const modal = document.createElement('div')
   modal.id = 'installer-wizard-modal'
-  modal.className = 'fixed inset-0 z-50 flex items-center justify-center'
+  modal.className = 'fixed inset-0 z-[1001] flex items-center justify-center'
+  modal.style.position = 'fixed'
+  modal.style.top = '0'
+  modal.style.left = '0'
+  modal.style.width = '100vw'
+  modal.style.height = '100vh'
+  modal.style.zIndex = '1001'
+  modal.style.display = 'flex'
+  modal.style.alignItems = 'center'
+  modal.style.justifyContent = 'center'
   modal.innerHTML = `
     <div class="absolute inset-0 bg-black bg-opacity-50"></div>
     <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] mx-4">
@@ -863,7 +881,16 @@ async function openSpecsManagementModal() {
   
   const modal = document.createElement('div')
   modal.id = 'specs-management-modal'
-  modal.className = 'fixed inset-0 z-50 flex items-center justify-center'
+  modal.className = 'fixed inset-0 z-[1001] flex items-center justify-center'
+  modal.style.position = 'fixed'
+  modal.style.top = '0'
+  modal.style.left = '0'
+  modal.style.width = '100vw'
+  modal.style.height = '100vh'
+  modal.style.zIndex = '1001'
+  modal.style.display = 'flex'
+  modal.style.alignItems = 'center'
+  modal.style.justifyContent = 'center'
   modal.innerHTML = `
     <div class="absolute inset-0 bg-black bg-opacity-50"></div>
     <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-6xl max-h-[90vh] mx-4">
@@ -1657,7 +1684,16 @@ function displayAnalysisResults(spec, results) {
   
   const modal = document.createElement('div')
   modal.id = 'analysis-results-modal'
-  modal.className = 'fixed inset-0 z-50 flex items-center justify-center'
+  modal.className = 'fixed inset-0 z-[1001] flex items-center justify-center'
+  modal.style.position = 'fixed'
+  modal.style.top = '0'
+  modal.style.left = '0'
+  modal.style.width = '100vw'
+  modal.style.height = '100vh'
+  modal.style.zIndex = '1001'
+  modal.style.display = 'flex'
+  modal.style.alignItems = 'center'
+  modal.style.justifyContent = 'center'
   modal.innerHTML = `
     <div class="absolute inset-0 bg-black bg-opacity-50"></div>
     <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] mx-4">
@@ -1694,7 +1730,16 @@ function openCreateSpecDialog() {
   
   const modal = document.createElement('div')
   modal.id = 'create-spec-modal'
-  modal.className = 'fixed inset-0 z-50 flex items-center justify-center'
+  modal.className = 'fixed inset-0 z-[1001] flex items-center justify-center'
+  modal.style.position = 'fixed'
+  modal.style.top = '0'
+  modal.style.left = '0'
+  modal.style.width = '100vw'
+  modal.style.height = '100vh'
+  modal.style.zIndex = '1001'
+  modal.style.display = 'flex'
+  modal.style.alignItems = 'center'
+  modal.style.justifyContent = 'center'
   modal.innerHTML = `
     <div class="absolute inset-0 bg-black bg-opacity-50"></div>
     <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg max-h-[90vh] mx-4">
