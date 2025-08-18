@@ -36,7 +36,8 @@ for from in "${!REPLACEMENTS[@]}"; do
   matches=$(grep -rl "$from" "$COMPONENTS_DIR" || true)
   if [[ -n "$matches" ]]; then
     while IFS= read -r file; do
-      sed -i '' "s/${from}/${to}/g" "$file"
+      cp "$file" "$file.bak"
+      sed -i "s/${from}/${to}/g" "$file" || sed -i '' "s/${from}/${to}/g" "$file"
       CHANGED_FILES+=("$file")
       echo "✅ Replaced '$from' → '$to' in $file"
     done <<< "$matches"

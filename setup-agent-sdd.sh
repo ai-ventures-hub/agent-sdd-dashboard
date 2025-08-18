@@ -103,7 +103,7 @@ cat << 'EOF' > .agent-sdd/instructions/sdd-create-spec.md
 Create a Software Design Document:
 1. Prompt user for feature name and description.
 2. If "what's next?", check .agent-sdd/product/roadmap.md for next item.
-3. Create folder .agent-sdd/specs/YYYY-MM-DD-[feature-name]/ (kebab-case, max 5 words).
+3. Use date-checker agent to get current date, then create folder .agent-sdd/specs/create-spec-[task-id]-[CURRENT-DATE]/ (where task-id is kebab-case, max 5 words).
 4. Generate sdd.md with:
    - Overview: Goal, user story, success criteria
    - Technical Specs: UI requirements (skip if --lite)
@@ -125,30 +125,30 @@ Execute a task:
 3. Write tests (TDD) if applicable.
 4. Implement code, commit with message "[task-id]: [description]".
 5. Run task-specific tests (if package.json exists).
-6. Run /sdd-review-code on modified files to ensure UX/UI compliance.
-7. Update task status to "Done" and set ux_ui_reviewed: true in tasks.json.
+6. Use Agent-SDD instruction: /sdd-review-code on modified files (NOT bash command) to ensure UX/UI compliance.
+7. Update task status to "completed" and set ux_ui_reviewed: true in tasks.json.
 8. Notify user with summary: tasks completed, issues, commit hash.
 EOF
 
 cat << 'EOF' > .agent-sdd/instructions/sdd-fix.md
 # /sdd-fix [--no-tests] <description>
 Apply a quick fix:
-1. Create task in .agent-sdd/specs/YYYY-MM-DD-quick-fix/tasks.json.
+1. Use date-checker agent to get current date, then create task in .agent-sdd/specs/fix-[task-id]-[CURRENT-DATE]/tasks.json.
 2. Implement fix, ensuring .agent-sdd/standards/theme-standards.md compliance.
-3. Run /sdd-review-code on modified files to ensure UX/UI compliance.
+3. Use Agent-SDD instruction: /sdd-review-code on modified files (NOT bash command) to ensure UX/UI compliance.
 4. Commit with message "fix: [description]".
-5. Update task status to "Done" and set ux_ui_reviewed: true.
+5. Update task status to "completed" and set ux_ui_reviewed: true.
 6. Notify user with summary.
 EOF
 
 cat << 'EOF' > .agent-sdd/instructions/sdd-tweak.md
 # /sdd-tweak [--fix-style] [--no-tests] <description>
 Apply a minor UI tweak:
-1. Create task in .agent-sdd/specs/YYYY-MM-DD-tweak/tasks.json.
+1. Use date-checker agent to get current date, then create task in .agent-sdd/specs/tweak-[task-id]-[CURRENT-DATE]/tasks.json.
 2. Implement tweak, strictly following .agent-sdd/standards/theme-standards.md.
-3. Run /sdd-review-code on modified files to ensure UX/UI compliance.
+3. Use Agent-SDD instruction: /sdd-review-code on modified files (NOT bash command) to ensure UX/UI compliance.
 4. Commit with message "tweak: [description]".
-5. Update task status to "Done" and set ux_ui_reviewed: true.
+5. Update task status to "completed" and set ux_ui_reviewed: true.
 6. Notify user with summary.
 EOF
 
@@ -171,6 +171,40 @@ Review code for theme standards compliance:
 3. Apply fixes (e.g., replace invalid Tailwind classes).
 4. Commit with message "style: Update [file-path] for theme compliance".
 5. Notify user with report: issues found, fixes applied.
+EOF
+
+cat << 'EOF' > .agent-sdd/instructions/sdd-check-task.md
+# /sdd-check-task <task-id>
+Verify task completion and documentation:
+1. Locate task in .agent-sdd/specs/*/tasks.json.
+2. Verify folder naming: <action>-<task-id>-[date].
+3. Check status: "completed" and ux_ui_reviewed: true.
+4. Validate documentation in sdd.md.
+5. Check theme compliance of modified files.
+6. Look for commit with task ID.
+7. Generate check report with overall status.
+EOF
+
+cat << 'EOF' > .agent-sdd/instructions/sdd-queue-tweak.md
+# /sdd-queue-tweak <task-id> <description>
+Queue UI/UX improvement for batch processing:
+1. Check if task exists in specs.
+2. Use date-checker for current date.
+3. Create/update spec: queue-tweak-[task-id]-[date].
+4. Add to tweaks-queue.json sorted by priority.
+5. Estimate effort (XS/S/M).
+6. Show queue position and next steps.
+EOF
+
+cat << 'EOF' > .agent-sdd/instructions/sdd-queue-fix.md
+# /sdd-queue-fix <task-id> <description>
+Queue bug/issue for systematic resolution:
+1. Categorize by severity and type.
+2. Use date-checker for current date.
+3. Create/update spec: queue-fix-[task-id]-[date].
+4. Add to fixes-queue.json sorted by severity.
+5. Link to original task if regression.
+6. Generate fix ticket with priority score.
 EOF
 
 # Agent files

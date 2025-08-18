@@ -55,3 +55,6 @@ src-tauri/.cargo/
 # Vim swap files
 *.swp
 target/
+
+#.agent-sdd
+.agent-sdd

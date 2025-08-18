@@ -88,9 +88,14 @@ if ! command -v claude &> /dev/null; then
     exit 1
 fi
 
-# Execute the task using Claude Code with the Agent-SDD instruction
+# Execute the task using Claude Code with a comprehensive prompt
 echo "🔄 Starting task execution..."
-if claude /sdd-execute-task "$TASK_ID"; then
+
+# Create a simple prompt for Claude as a command line argument
+echo "📝 Preparing Claude prompt for task: $TASK_ID"
+
+# Execute Claude with the prompt as an argument
+if claude --print "Execute Agent-SDD task $TASK_ID. Find the task in .agent-sdd/specs/*/tasks.json, implement the required functionality, and update the task status to completed. Provide a brief summary when done."; then
     echo "✅ Task execution completed successfully for: $TASK_ID"
 else
     echo "❌ Task execution failed for: $TASK_ID"

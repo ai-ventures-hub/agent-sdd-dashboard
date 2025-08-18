@@ -192,4 +192,47 @@ mkdir -p "$STANDARDS_DIR"
 cat > "${STANDARDS_DIR}/theme-standards.md" <<EOF
 # Theme Standards (${THEME_NAME})
 
-> Generated on ${DATE_STR}. Update if you cha_
+> Generated on ${DATE_STR}. Update if you change colors.
+
+## Palette
+
+| Name      | Value       |
+|-----------|-------------|
+| Primary   | ${PRIMARY}  |
+| Secondary | ${SECONDARY}|
+| Success   | ${SUCCESS}  |
+| Error     | ${ERROR}    |
+
+**Allowed Tailwind Classes**
+
+\`\`\`txt
+bg-primary bg-secondary bg-success bg-error text-on-primary text-default bg-default
+\`\`\`
+EOF
+
+# Log decision
+cat >> "${PRODUCT_DIR}/decisions.md" <<EOF
+
+[${DATE_STR}] – Applied ${THEME_NAME} theme
+What: Set theme colors (primary ${PRIMARY}, secondary ${SECONDARY}, success ${SUCCESS}, error ${ERROR}).
+Why: Align UI styling with selected theme.
+Impact: Regenerated theme assets and standards for enforcement.
+EOF
+
+echo "✅ Theme '${THEME_NAME}' applied."
+echo "   Theme files: ${THEME_DIR}/theme.css"
+echo "   Standards updated: ${STANDARDS_DIR}/theme-standards.md"
+
+if [[ -n "$APP_CSS" ]]; then
+  rel_path=$(realpath --relative-to="$(dirname "$APP_CSS")" "${THEME_DIR}/theme.css")
+  import_line="@import \"${rel_path}\";"
+  if ! grep -Fq "$import_line" "$APP_CSS"; then
+    printf '%s\n%s\n' "$import_line" "$(cat "$APP_CSS")" > "${APP_CSS}.tmp"
+    mv "${APP_CSS}.tmp" "$APP_CSS"
+    echo "   Added theme import to $APP_CSS"
+  else
+    echo "   Theme already imported in $APP_CSS"
+  fi
+else
+  echo "⚠️ app.css not found. Add import manually: @import \"../../.agent-sdd/standards/theme-files/${THEME_NAME}/theme.css\";"
+fi

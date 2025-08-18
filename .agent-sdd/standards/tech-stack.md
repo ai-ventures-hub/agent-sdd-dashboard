@@ -1,30 +1,40 @@
 # Tech Stack
-# ✅ Updated for Agent-SDD Desktop Viewer (Tauri on macOS)
+## Core Framework
+- **Tauri v2.7.0** - Cross-platform desktop application framework using Rust backend and web frontend
+- **Rust** - Backend language for system integration and file operations
+- **JavaScript (ES6+ Modules)** - Frontend scripting without additional frameworks
 
-- **Framework**
-  - [Tauri](https://tauri.app) (v2.x) → Lightweight, secure desktop app framework
-  - Rust (latest stable) → Backend command handling (filesystem, project scanning)
+## Frontend Technologies
+- **HTML5** - Semantic markup with modern features
+- **CSS3** - Modern styling with custom properties and grid/flexbox layouts
+- **Tailwind CSS v3.4.1** - Utility-first CSS framework for rapid UI development
+- **PostCSS v8.4.33** - CSS processing with Autoprefixer v10.4.16
 
-- **Frontend**
-  - React (v18.x)
-  - TypeScript (v5.x)
+## Backend Dependencies (Rust)
+- **serde/serde_json** - JSON serialization/deserialization
+- **tokio** - Async runtime with full features
+- **chrono** - Date and time handling with serde support
+- **log** - Logging framework
 
-- **Styling**
-  - Tailwind CSS (v3.x) → Utility-first styling
-  - shadcn/ui (latest) → Component library on top of Tailwind
-  - CSS Variables → Theme customization (light/dark, color tokens)
+## Tauri Plugins
+- **tauri-plugin-fs v2** - File system operations
+- **tauri-plugin-dialog v2** - Native dialog support
+- **tauri-plugin-log v2** - Logging integration
 
-- **Testing**
-  - Jest (v29.x) for unit tests (frontend)
-  - Playwright (optional, for end-to-end testing desktop UI)
-  - cargo test (Rust backend)
+## Build Tools
+- **Tailwind CLI** - CSS compilation and optimization
+- **Tauri Build** - Application bundling and packaging
+- **Cargo** - Rust package manager and build system
 
-- **Build & Tooling**
-  - Prettier (v3.x) → Code formatting
-  - ESLint (v9.x) → Linting for TypeScript/React
-  - Cargo Clippy + cargo fmt → Linting and formatting for Rust
-  - Git (CLI + GitHub Desktop) → Version control
+## Architecture
+- **Desktop Application** - Native cross-platform desktop app
+- **Web-based UI** - HTML/CSS/JS frontend in Tauri webview
+- **Local File System** - Direct file system access without external dependencies
+- **No External Services** - Completely offline, local-only operation
 
-- **OS Support**
-  - macOS (primary target; signed and notarized builds)
-  - Windows/Linux planned for later phases
+## Key Features
+- ES6 module system for frontend code organization
+- Component-based architecture using vanilla JavaScript
+- Custom CSS properties for theming
+- Rust backend for secure file operations
+- Hot reload during development via Tauri dev server
