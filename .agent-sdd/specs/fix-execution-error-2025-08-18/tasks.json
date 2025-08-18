@@ -1,0 +1,14 @@
+{
+  "tasks": [
+    {
+      "id": "EXEC-ERROR-001",
+      "title": "Fix execution error when clicking execute button",
+      "description": "Getting 'Error: undefined' when clicking execute for task EXEC-006. Need to investigate and fix the execution flow.",
+      "status": "completed",
+      "created_at": "2025-08-18",
+      "completed_date": "2025-08-18",
+      "ux_ui_reviewed": true,
+      "notes": "Fixed by creating missing Agent-SDD script files (sdd-execute-task.sh, sdd-fix.sh, sdd-tweak.sh, sdd-check-task.sh, sdd-queue-fix.sh, sdd-queue-tweak.sh) that the Tauri backend was looking for. Updated all scripts to follow UX/UI standards with proper error handling, emojis, usage documentation, and consistent patterns."
+    }
+  ]
+}
