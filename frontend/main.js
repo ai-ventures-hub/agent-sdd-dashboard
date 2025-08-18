@@ -1,4 +1,6 @@
 import { state, bindCommon, selectProject } from './shared.js'
+import { createCommandButtonGroup } from './components/ui/commandButton.js'
+import { openExecutionModal } from './components/modals/executionModal.js'
 
 // Get invoke function from shared.js
 let invoke;
@@ -754,6 +756,9 @@ async function initializeSpecsPage(projectPath) {
     projectPath: projectPath // Store project path in sort state
   }
   
+  // Make sortState globally accessible for command execution
+  window.currentSpecsSortState = sortState
+  
   // Set up table sorting
   setupTableSorting(sortState)
   
@@ -1345,6 +1350,91 @@ function renderSpecDetailsPanel(spec) {
       ${renderQuickActionsBar(spec)}
     </div>
   `
+  
+  // Add command buttons to tasks after rendering
+  setTimeout(() => addCommandButtonsToSpecTasks(spec), 0)
+}
+
+// Add command buttons to spec task items in the details panel
+function addCommandButtonsToSpecTasks(spec) {
+  if (!spec.tasks) return
+  
+  // Available commands for tasks
+  const availableCommands = ['execute-task', 'fix', 'tweak', 'check-task']
+  
+  spec.tasks.forEach(task => {
+    const taskActionsContainer = document.querySelector(`.task-actions[data-task-id="${task.id}"]`)
+    if (!taskActionsContainer) return
+    
+    // Clear existing buttons
+    taskActionsContainer.innerHTML = ''
+    
+    // Create command button group
+    const buttonGroup = createCommandButtonGroup(task, availableCommands)
+    taskActionsContainer.appendChild(buttonGroup)
+  })
+  
+  // Set up command click handler for this spec
+  setupSpecCommandClickHandler(spec)
+}
+
+// Set up command click event handling for spec tasks in details panel
+function setupSpecCommandClickHandler(spec) {
+  // Use event delegation on the task section
+  const detailsPanel = document.querySelector('.specs-details-panel')
+  if (!detailsPanel) return
+  
+  // Remove any existing listener
+  detailsPanel.removeEventListener('command-click', handleDetailsPanelCommandClick)
+  
+  // Add new listener
+  function handleDetailsPanelCommandClick(e) {
+    const { command, taskData } = e.detail
+    handleSpecCommandExecution(command, taskData, spec)
+  }
+  
+  detailsPanel.addEventListener('command-click', handleDetailsPanelCommandClick)
+}
+
+// Handle command execution for spec details panel
+function handleSpecCommandExecution(command, taskData, spec) {
+  console.log(`Executing command: ${command} for task: ${taskData.id} in spec: ${spec.id}`)
+  
+  // Get the current project path - check both possible selectors
+  const projectSelect = document.getElementById('projectsSelect') || document.querySelector('[data-project-path]')
+  let projectPath = ''
+  
+  if (projectSelect) {
+    projectPath = projectSelect.value || projectSelect.dataset.projectPath || ''
+  }
+  
+  // For specs management page, try to get from sortState if available
+  if (!projectPath && window.currentSpecsSortState) {
+    projectPath = window.currentSpecsSortState.projectPath || ''
+  }
+  
+  if (!projectPath) {
+    alert('Unable to determine project path. Please ensure a project is selected.')
+    return
+  }
+  
+  // Open execution modal with proper parameters
+  openExecutionModal(command, taskData, spec, projectPath, {
+    onComplete: (result) => {
+      console.log('Command execution completed:', result)
+      
+      // Refresh specs data if needed
+      if (result.success) {
+        // Dispatch event for other components to handle refresh
+        document.dispatchEvent(new CustomEvent('command-execution-complete', {
+          detail: { command, taskData, result, spec }
+        }))
+      }
+    },
+    onCancel: () => {
+      console.log('Command execution cancelled')
+    }
+  })
 }
 
 function renderTaskStatusGroup(title, tasks, status) {
@@ -1379,6 +1469,9 @@ function renderTaskStatusGroup(title, tasks, status) {
             ${task.completed ? 
               `<div class="task-completed-date">Completed: ${task.completed}</div>` : ''
             }
+            <div class="task-actions" data-task-id="${escapeHtml(task.id)}">
+              <!-- Command buttons will be inserted here -->
+            </div>
           </div>
         `).join('')}
       </div>

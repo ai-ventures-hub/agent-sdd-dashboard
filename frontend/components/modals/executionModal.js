@@ -11,6 +11,8 @@ export class ExecutionModal {
   constructor(options = {}) {
     this.command = options.command || ''
     this.taskData = options.taskData || {}
+    this.specData = options.specData || {}
+    this.projectPath = options.projectPath || ''
     this.onComplete = options.onComplete || (() => {})
     this.onCancel = options.onCancel || (() => {})
     
@@ -168,26 +170,38 @@ export class ExecutionModal {
       
       // Execute the command via Tauri
       this.updateProgress(50)
-      const result = await invoke('execute_instruction_command', {
-        command: this.command,
-        args: commandArgs,
-        taskId: this.taskData.id
+      const result = await invoke('execute_agent_sdd_command', {
+        command: `sdd-${this.command}`,
+        task_id: this.taskData.id,
+        spec_path: this.specData.path || '',
+        project_path: this.projectPath
       })
       
       this.updateProgress(75)
-      this.appendOutput(result.output || 'Command executed successfully\n', 'success')
+      
+      // Display command output
+      if (result.stdout) {
+        this.appendOutput(result.stdout, 'info')
+      }
+      if (result.stderr) {
+        this.appendOutput(result.stderr, 'warning')
+      }
       
       if (result.success) {
         this.updateStatus('Completed successfully', 'success')
         this.updateProgress(100)
         this.appendOutput('\n✅ Execution completed successfully\n', 'success')
         
+        if (result.duration_ms) {
+          this.appendOutput(`\nExecution time: ${result.duration_ms}ms\n`, 'info')
+        }
+        
         // Call completion callback after a short delay
         setTimeout(() => {
           this.onComplete(result)
         }, 1000)
       } else {
-        throw new Error(result.error || 'Command execution failed')
+        throw new Error(result.error_message || `Command failed with exit code ${result.exit_code}`)
       }
       
     } catch (error) {
@@ -356,12 +370,16 @@ export class ExecutionModal {
  * Open execution modal for a command
  * @param {string} command - Command to execute
  * @param {Object} taskData - Task data
+ * @param {Object} specData - Spec data containing path info
+ * @param {string} projectPath - Project path
  * @param {Object} options - Additional options
  */
-export function openExecutionModal(command, taskData = {}, options = {}) {
+export function openExecutionModal(command, taskData = {}, specData = {}, projectPath = '', options = {}) {
   const modal = new ExecutionModal({
     command,
     taskData,
+    specData,
+    projectPath,
     onComplete: options.onComplete || (() => {}),
     onCancel: options.onCancel || (() => {})
   })
@@ -376,12 +394,14 @@ export function openExecutionModal(command, taskData = {}, options = {}) {
 
 /**
  * Set up command execution handlers for command buttons
+ * @param {Object} specData - Spec data containing path info
+ * @param {string} projectPath - Project path
  */
-export function setupCommandExecutionHandlers() {
+export function setupCommandExecutionHandlers(specData = {}, projectPath = '') {
   document.addEventListener('command-click', (e) => {
     const { command, taskData } = e.detail
     
-    openExecutionModal(command, taskData, {
+    openExecutionModal(command, taskData, specData, projectPath, {
       onComplete: (result) => {
         // Refresh the page or update UI as needed
         console.log('Command execution completed:', result)

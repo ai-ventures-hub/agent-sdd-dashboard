@@ -2,6 +2,7 @@ import { formatDate, formatFileSize, getStatusIcon, getStatusClass, getTaskStatu
 import { escapeHtml } from '../../utils/dom.js'
 import { getFilteredSpecsData, setFilteredSpecsData } from '../../services/specsService.js'
 import { createCommandButtonGroup } from './commandButton.js'
+import { openExecutionModal } from '../modals/executionModal.js'
 // Note: openFilePreview is available globally via window.openFilePreview
 
 // Global state for table sorting
@@ -230,23 +231,56 @@ function addCommandButtonsToTasks(spec) {
     taskActionsContainer.appendChild(buttonGroup)
   })
   
-  // Set up command click handler
+  // Set up command click handler for this spec's tasks
   setupCommandClickHandler(spec)
 }
 
-// Set up command click event handling
+// Set up command click event handling for a specific spec
 function setupCommandClickHandler(spec) {
-  document.addEventListener('command-click', (e) => {
+  // Use event delegation on the task actions containers for this spec
+  const tasksContainer = document.getElementById(`tasks-list-${spec.id}`)
+  if (!tasksContainer) return
+  
+  // Remove any existing listener
+  tasksContainer.removeEventListener('command-click', handleSpecCommandClick)
+  
+  // Add new listener
+  function handleSpecCommandClick(e) {
     const { command, taskData } = e.detail
     handleCommandExecution(command, taskData, spec)
-  })
+  }
+  
+  tasksContainer.addEventListener('command-click', handleSpecCommandClick)
 }
 
 // Handle command execution
 function handleCommandExecution(command, taskData, spec) {
   console.log(`Executing command: ${command} for task: ${taskData.id}`)
   
-  // TODO: This will be implemented in EXEC-003 and EXEC-005
-  // For now, just show an alert
-  alert(`Command "${command}" will be executed for task "${taskData.id}".\n\nThis functionality will be implemented in the next tasks.`)
+  // Get the current project path from the project selector
+  const projectSelect = document.getElementById('projectsSelect')
+  const projectPath = projectSelect ? projectSelect.value : ''
+  
+  if (!projectPath) {
+    alert('Please select a project first.')
+    return
+  }
+  
+  // Open execution modal with proper parameters
+  openExecutionModal(command, taskData, spec, projectPath, {
+    onComplete: (result) => {
+      console.log('Command execution completed:', result)
+      
+      // Refresh specs data if needed
+      if (result.success) {
+        // Dispatch event for other components to handle refresh
+        document.dispatchEvent(new CustomEvent('command-execution-complete', {
+          detail: { command, taskData, result, spec }
+        }))
+      }
+    },
+    onCancel: () => {
+      console.log('Command execution cancelled')
+    }
+  })
 }
