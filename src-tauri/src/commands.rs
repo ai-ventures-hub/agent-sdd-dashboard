@@ -934,12 +934,20 @@ pub async fn execute_agent_sdd_command(request: CommandRequest) -> Result<Comman
 }
 
 async fn find_agent_sdd_script(command: &str, agent_sdd_dir: &Path) -> Option<String> {
+    log::info!("Looking for script for command: {}", command);
+    log::info!("Agent SDD dir: {}", agent_sdd_dir.display());
+    
     // Look for scripts in .agent-sdd/scripts/ directory
     let scripts_dir = agent_sdd_dir.join("scripts");
+    log::info!("Scripts dir: {}, exists: {}", scripts_dir.display(), scripts_dir.exists());
+    
     if scripts_dir.exists() {
         let script_name = format!("{}.sh", command);
         let script_path = scripts_dir.join(&script_name);
+        log::info!("Looking for script: {}, exists: {}", script_path.display(), script_path.exists());
+        
         if script_path.exists() {
+            log::info!("Found script: {}", script_path.display());
             return Some(script_path.to_string_lossy().to_string());
         }
     }
@@ -956,6 +964,7 @@ async fn find_agent_sdd_script(command: &str, agent_sdd_dir: &Path) -> Option<St
         }
     }
     
+    log::warn!("No script found for command: {}", command);
     None
 }
 
@@ -993,6 +1002,15 @@ async fn execute_script_command(script_path: &str, request: &CommandRequest, sta
             let stderr = String::from_utf8_lossy(&output.stderr).to_string();
             
             log::info!("Script execution completed in {}ms", duration.as_millis());
+            log::info!("Script stdout: {}", stdout);
+            log::info!("Script stderr: {}", stderr);
+            log::info!("Script exit code: {:?}", output.status.code());
+            
+            let error_message = if !output.status.success() {
+                Some(format!("Script exited with code: {:?}", output.status.code()))
+            } else {
+                None
+            };
             
             Ok(CommandResult {
                 success: output.status.success(),
@@ -1000,16 +1018,32 @@ async fn execute_script_command(script_path: &str, request: &CommandRequest, sta
                 stdout,
                 stderr,
                 duration_ms: duration.as_millis() as u64,
-                error_message: None,
+                error_message,
             })
         }
         Ok(Ok(Err(e))) => {
-            let _duration = start_time.elapsed();
-            Err(format!("Failed to execute script: {}", e))
+            let duration = start_time.elapsed();
+            log::error!("Failed to execute script: {}", e);
+            Ok(CommandResult {
+                success: false,
+                exit_code: Some(-1),
+                stdout: String::new(),
+                stderr: format!("Failed to execute script: {}", e),
+                duration_ms: duration.as_millis() as u64,
+                error_message: Some(format!("Script execution failed: {}", e)),
+            })
         }
         Ok(Err(e)) => {
-            let _duration = start_time.elapsed();
-            Err(format!("Task execution error: {}", e))
+            let duration = start_time.elapsed();
+            log::error!("Task execution error: {}", e);
+            Ok(CommandResult {
+                success: false,
+                exit_code: Some(-1),
+                stdout: String::new(),
+                stderr: format!("Task execution error: {}", e),
+                duration_ms: duration.as_millis() as u64,
+                error_message: Some(format!("Task execution error: {}", e)),
+            })
         }
         Err(_) => {
             let duration = start_time.elapsed();
@@ -1028,9 +1062,18 @@ async fn execute_script_command(script_path: &str, request: &CommandRequest, sta
 async fn execute_direct_command(request: &CommandRequest, start_time: Instant) -> Result<CommandResult, String> {
     log::info!("Executing direct command: {} for task: {}", request.command, request.task_id);
     
-    // For direct command execution, we'll create a simple placeholder
-    // This would be where you implement direct execution of Agent-SDD commands
-    // For now, we'll return a mock response
+    // Check if this is an execute-task command that should use Claude Code CLI
+    if request.command == "sdd-execute-task" {
+        log::warn!("Script not found for sdd-execute-task, returning error instead of mock");
+        return Ok(CommandResult {
+            success: false,
+            exit_code: Some(1),
+            stdout: String::new(),
+            stderr: format!("Script execution failed: sdd-execute-task.sh not found or not executable.\n\nTo use the execute feature, ensure:\n1. Claude Code CLI is installed\n2. The sdd-execute-task.sh script exists and is executable\n3. You have the proper Agent-SDD setup\n\nThis feature requires Claude Code CLI to work properly."),
+            duration_ms: start_time.elapsed().as_millis() as u64,
+            error_message: Some("Agent-SDD script execution requires Claude Code CLI".to_string()),
+        });
+    }
     
     let duration = start_time.elapsed();
     
