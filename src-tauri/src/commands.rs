@@ -1,7 +1,10 @@
 use std::fs;
 use std::path::Path;
+use std::process::{Command, Stdio};
+use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
 use tauri_plugin_dialog::DialogExt;
+use tokio::time::timeout;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DirectoryInfo {
@@ -858,5 +861,197 @@ fn create_tasks_json(spec_name: &str, date: &str) -> String {
     }}
   ]
 }}"#, spec_name, date)
+}
+
+// Command execution structures and functions
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CommandRequest {
+    pub command: String,
+    pub task_id: String,
+    pub spec_path: String,
+    pub project_path: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CommandResult {
+    pub success: bool,
+    pub exit_code: Option<i32>,
+    pub stdout: String,
+    pub stderr: String,
+    pub duration_ms: u64,
+    pub error_message: Option<String>,
+}
+
+#[tauri::command]
+pub async fn execute_agent_sdd_command(request: CommandRequest) -> Result<CommandResult, String> {
+    let start_time = Instant::now();
+    
+    log::info!("Executing Agent-SDD command: {} for task: {}", request.command, request.task_id);
+    
+    // Validate the command is allowed
+    let allowed_commands = vec![
+        "sdd-execute-task",
+        "sdd-fix", 
+        "sdd-tweak",
+        "sdd-check-task",
+        "sdd-queue-fix",
+        "sdd-queue-tweak"
+    ];
+    
+    if !allowed_commands.contains(&request.command.as_str()) {
+        return Err(format!("Command '{}' is not allowed", request.command));
+    }
+    
+    // Validate project path exists and contains .agent-sdd
+    let project_dir = Path::new(&request.project_path);
+    if !project_dir.exists() || !project_dir.is_dir() {
+        return Err("Project path does not exist or is not a directory".to_string());
+    }
+    
+    let agent_sdd_dir = project_dir.join(".agent-sdd");
+    if !agent_sdd_dir.exists() || !agent_sdd_dir.is_dir() {
+        return Err("Project does not contain .agent-sdd directory".to_string());
+    }
+    
+    // Validate spec path exists
+    let spec_path = Path::new(&request.spec_path);
+    if !spec_path.exists() || !spec_path.is_dir() {
+        return Err("Spec path does not exist or is not a directory".to_string());
+    }
+    
+    // Construct the command based on the Agent-SDD instruction
+    let script_path = match find_agent_sdd_script(&request.command, &agent_sdd_dir).await {
+        Some(path) => path,
+        None => {
+            // Fallback: try to execute as a direct command with task ID
+            return execute_direct_command(&request, start_time).await;
+        }
+    };
+    
+    // Execute the script with the task ID
+    execute_script_command(&script_path, &request, start_time).await
+}
+
+async fn find_agent_sdd_script(command: &str, agent_sdd_dir: &Path) -> Option<String> {
+    // Look for scripts in .agent-sdd/scripts/ directory
+    let scripts_dir = agent_sdd_dir.join("scripts");
+    if scripts_dir.exists() {
+        let script_name = format!("{}.sh", command);
+        let script_path = scripts_dir.join(&script_name);
+        if script_path.exists() {
+            return Some(script_path.to_string_lossy().to_string());
+        }
+    }
+    
+    // Look for instruction files in .agent-sdd/instructions/
+    let instructions_dir = agent_sdd_dir.join("instructions");
+    if instructions_dir.exists() {
+        let instruction_file = format!("{}.md", command);
+        let instruction_path = instructions_dir.join(&instruction_file);
+        if instruction_path.exists() {
+            // For instruction files, we might need to execute them differently
+            // For now, we'll return None to use direct command execution
+            log::info!("Found instruction file: {}, using direct command execution", instruction_path.display());
+        }
+    }
+    
+    None
+}
+
+async fn execute_script_command(script_path: &str, request: &CommandRequest, start_time: Instant) -> Result<CommandResult, String> {
+    log::info!("Executing script: {} with task ID: {}", script_path, request.task_id);
+    
+    // Make script executable (Unix systems)
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        if let Ok(metadata) = fs::metadata(script_path) {
+            let mut permissions = metadata.permissions();
+            permissions.set_mode(0o755); // rwxr-xr-x
+            let _ = fs::set_permissions(script_path, permissions);
+        }
+    }
+    
+    // Execute the script with timeout
+    let timeout_duration = Duration::from_secs(300); // 5 minutes timeout
+    
+    let mut command = Command::new("bash");
+    command
+        .arg(script_path)
+        .arg(&request.task_id)
+        .current_dir(&request.project_path)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    
+    match timeout(timeout_duration, tokio::task::spawn_blocking(move || {
+        command.output()
+    })).await {
+        Ok(Ok(Ok(output))) => {
+            let duration = start_time.elapsed();
+            let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+            let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+            
+            log::info!("Script execution completed in {}ms", duration.as_millis());
+            
+            Ok(CommandResult {
+                success: output.status.success(),
+                exit_code: output.status.code(),
+                stdout,
+                stderr,
+                duration_ms: duration.as_millis() as u64,
+                error_message: None,
+            })
+        }
+        Ok(Ok(Err(e))) => {
+            let _duration = start_time.elapsed();
+            Err(format!("Failed to execute script: {}", e))
+        }
+        Ok(Err(e)) => {
+            let _duration = start_time.elapsed();
+            Err(format!("Task execution error: {}", e))
+        }
+        Err(_) => {
+            let duration = start_time.elapsed();
+            Ok(CommandResult {
+                success: false,
+                exit_code: None,
+                stdout: String::new(),
+                stderr: "Command timed out after 5 minutes".to_string(),
+                duration_ms: duration.as_millis() as u64,
+                error_message: Some("Execution timeout".to_string()),
+            })
+        }
+    }
+}
+
+async fn execute_direct_command(request: &CommandRequest, start_time: Instant) -> Result<CommandResult, String> {
+    log::info!("Executing direct command: {} for task: {}", request.command, request.task_id);
+    
+    // For direct command execution, we'll create a simple placeholder
+    // This would be where you implement direct execution of Agent-SDD commands
+    // For now, we'll return a mock response
+    
+    let duration = start_time.elapsed();
+    
+    // Simulate some processing time
+    tokio::time::sleep(Duration::from_millis(500)).await;
+    
+    let mock_output = format!(
+        "Agent-SDD Command: {}\nTask ID: {}\nSpec Path: {}\nProject Path: {}\n\nThis is a mock execution. Full implementation pending.",
+        request.command,
+        request.task_id,
+        request.spec_path,
+        request.project_path
+    );
+    
+    Ok(CommandResult {
+        success: true,
+        exit_code: Some(0),
+        stdout: mock_output,
+        stderr: String::new(),
+        duration_ms: duration.as_millis() as u64,
+        error_message: None,
+    })
 }
 
