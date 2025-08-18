@@ -307,7 +307,15 @@ export class ExecutionModal {
       }
       
       iconContainer.innerHTML = icons[type] || icons.info
-      iconContainer.className = iconContainer.className.replace(/text-\w+-500/g, '') + ' ' + (colors[type] || colors.info)
+      
+      // Handle SVG className properly
+      const currentClasses = iconContainer.className.baseVal || iconContainer.className || ''
+      const newClasses = currentClasses.replace(/text-\w+-500/g, '').trim() + ' ' + (colors[type] || colors.info)
+      if (iconContainer.className.baseVal !== undefined) {
+        iconContainer.className.baseVal = newClasses.trim()
+      } else {
+        iconContainer.className = newClasses.trim()
+      }
     }
   }
 
