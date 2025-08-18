@@ -309,9 +309,9 @@ export class ExecutionModal {
     
     const colors = {
       info: 'text-gray-700 dark:text-gray-300',
-      success: 'text-green-600 dark:text-green-400',
-      error: 'text-red-600 dark:text-red-400',
-      warning: 'text-yellow-600 dark:text-yellow-400'
+      success: 'text-green-500 dark:text-green-400',
+      error: 'text-red-500 dark:text-red-400',
+      warning: 'text-yellow-500 dark:text-yellow-400'
     }
     
     const line = document.createElement('div')
@@ -333,7 +333,7 @@ export class ExecutionModal {
     if (this.isExecuting) {
       cancelBtns.forEach(btn => {
         btn.textContent = 'Cancel'
-        btn.className = btn.className.replace(/bg-gray-200.*?transition-colors duration-200/, 'bg-red-500 text-white hover:bg-red-600 transition-colors duration-200')
+        btn.className = btn.className.replace(/bg-gray-200.*?transition-colors duration-200/, 'bg-red-500 text-white hover:bg-red-500 transition-colors duration-200')
       })
     } else {
       cancelBtns.forEach(btn => {

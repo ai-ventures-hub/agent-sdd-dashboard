@@ -106,7 +106,7 @@ async function openFilePreview(filePath) {
     }
   } catch (error) {
     modal.querySelector('.p-4').innerHTML = `
-      <div class="text-red-600 dark:text-red-400 text-center">Failed to load file: ${error.message}</div>
+      <div class="text-red-500 dark:text-red-400 text-center">Failed to load file: ${error.message}</div>
     `
   }
 }
@@ -398,8 +398,8 @@ async function openInstallerWizard() {
       </div>
       <div class="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
         <button id="wizard-back" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors" style="display: none;">Back</button>
-        <button id="wizard-next" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">Next</button>
-        <button id="wizard-install" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors" style="display: none;">Install</button>
+        <button id="wizard-next" class="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-500 rounded-lg transition-colors">Next</button>
+        <button id="wizard-install" class="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-500 rounded-lg transition-colors" style="display: none;">Install</button>
         <button id="wizard-cancel" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors">Cancel</button>
       </div>
     </div>
@@ -1857,7 +1857,7 @@ function openCreateSpecDialog() {
         </div>
       </div>
       <div class="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
-        <button id="create-spec-btn" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">Create Spec</button>
+        <button id="create-spec-btn" class="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-500 rounded-lg transition-colors">Create Spec</button>
         <button id="cancel-spec-btn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors">Cancel</button>
       </div>
     </div>
