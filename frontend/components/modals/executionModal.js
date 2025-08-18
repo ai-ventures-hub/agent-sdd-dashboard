@@ -190,10 +190,12 @@ export class ExecutionModal {
       // Execute the command via Tauri
       this.updateProgress(50)
       const result = await invoke('execute_agent_sdd_command', {
-        command: `sdd-${this.command}`,
-        task_id: this.taskData.id,
-        spec_path: this.specData.path || '',
-        project_path: this.projectPath
+        request: {
+          command: `sdd-${this.command}`,
+          task_id: this.taskData.id,
+          spec_path: this.specData.path || '',
+          project_path: this.projectPath
+        }
       })
       
       this.updateProgress(75)
