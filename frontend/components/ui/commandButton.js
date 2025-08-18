@@ -40,15 +40,15 @@ export class CommandButton {
   }
 
   /**
-   * Get variant-specific CSS classes following theme standards
+   * Get variant-specific CSS classes following project theme standards
    */
   getVariantClasses() {
     const variants = {
-      primary: 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-400 dark:hover:bg-blue-500',
-      secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600',
-      success: 'bg-green-500 text-white hover:bg-green-600 dark:bg-green-400 dark:hover:bg-green-500',
-      warning: 'bg-yellow-500 text-white hover:bg-yellow-600 dark:bg-yellow-400 dark:hover:bg-yellow-500',
-      danger: 'bg-red-500 text-white hover:bg-red-600 dark:bg-red-400 dark:hover:bg-red-500'
+      primary: 'bg-app-accent text-white hover:bg-green-600',
+      secondary: 'bg-app-card text-app-text border border-app-outline hover:bg-app-panel',
+      success: 'bg-green-500 text-white hover:bg-green-600',
+      warning: 'bg-yellow-500 text-white hover:bg-yellow-600',
+      danger: 'bg-red-500 text-white hover:bg-red-600'
     }
     return variants[this.variant] || variants.primary
   }
@@ -94,7 +94,7 @@ export class CommandButton {
    * Render the button element
    */
   render() {
-    const baseClasses = 'inline-flex items-center gap-2 rounded-md font-medium transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800'
+    const baseClasses = 'inline-flex items-center gap-2 rounded-md font-medium transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-app-accent focus:ring-offset-2'
     const variantClasses = this.getVariantClasses()
     const sizeClasses = this.getSizeClasses()
     const disabledClasses = this.disabled ? 'opacity-60 cursor-not-allowed pointer-events-none' : 'cursor-pointer'

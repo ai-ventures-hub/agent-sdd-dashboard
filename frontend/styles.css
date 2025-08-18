@@ -80,6 +80,51 @@ body {
   .btn-secondary:disabled {
     @apply bg-app-muted border-app-muted cursor-not-allowed;
   }
+  
+  /* Task item layout for command buttons */
+  .task-item {
+    @apply flex items-start justify-between gap-3 p-3 bg-app-card border border-app-outline rounded-lg mb-2;
+  }
+  
+  .task-item-main {
+    @apply flex items-start gap-3 flex-1 min-w-0;
+  }
+  
+  .task-content {
+    @apply flex-1 min-w-0;
+  }
+  
+  .task-actions {
+    @apply flex-shrink-0;
+  }
+  
+  .task-name {
+    @apply font-medium text-app-text text-sm mb-1;
+  }
+  
+  .task-description {
+    @apply text-xs text-app-muted leading-relaxed mb-2;
+  }
+  
+  .task-meta {
+    @apply flex items-center gap-3 text-xs text-app-muted;
+  }
+  
+  .task-status {
+    @apply flex-shrink-0 w-4 text-center;
+  }
+  
+  .task-item.completed {
+    @apply border-l-4 border-l-green-500;
+  }
+  
+  .task-item.in_progress {
+    @apply border-l-4 border-l-yellow-400;
+  }
+  
+  .task-item.pending {
+    @apply border-l-4 border-l-gray-400;
+  }
 }
 
 /* Remaining custom styles that are complex to convert */

@@ -1,6 +1,7 @@
 import { formatDate, formatFileSize, getStatusIcon, getStatusClass, getTaskStatusIcon } from '../../utils/formatters.js'
 import { escapeHtml } from '../../utils/dom.js'
 import { getFilteredSpecsData, setFilteredSpecsData } from '../../services/specsService.js'
+import { createCommandButtonGroup } from './commandButton.js'
 // Note: openFilePreview is available globally via window.openFilePreview
 
 // Global state for table sorting
@@ -176,18 +177,23 @@ export function selectSpec(spec) {
       
       <div class="tasks-section">
         <h4>Tasks</h4>
-        <div class="tasks-list">
-          ${spec.tasks.map(task => `
-            <div class="task-item ${task.status}">
-              <span class="task-status">${getTaskStatusIcon(task.status)}</span>
-              <div class="task-content">
-                <div class="task-name">${escapeHtml(task.name)}</div>
-                <div class="task-description">${escapeHtml(task.description)}</div>
-                <div class="task-meta">
-                  <span class="task-id">${task.id}</span>
-                  <span class="task-effort">Effort: ${task.effort}</span>
-                  ${task.ux_ui_reviewed ? '<span class="task-reviewed">✓ UX/UI</span>' : ''}
+        <div class="tasks-list" id="tasks-list-${spec.id}">
+          ${spec.tasks.map((task, taskIndex) => `
+            <div class="task-item ${task.status}" data-task-id="${task.id}" data-task-index="${taskIndex}">
+              <div class="task-item-main">
+                <span class="task-status">${getTaskStatusIcon(task.status)}</span>
+                <div class="task-content">
+                  <div class="task-name">${escapeHtml(task.name)}</div>
+                  <div class="task-description">${escapeHtml(task.description)}</div>
+                  <div class="task-meta">
+                    <span class="task-id">${task.id}</span>
+                    <span class="task-effort">Effort: ${task.effort}</span>
+                    ${task.ux_ui_reviewed ? '<span class="task-reviewed">✓ UX/UI</span>' : ''}
+                  </div>
                 </div>
+              </div>
+              <div class="task-actions" data-task-id="${task.id}">
+                <!-- Command buttons will be inserted here -->
               </div>
             </div>
           `).join('')}
@@ -200,4 +206,47 @@ export function selectSpec(spec) {
       </div>
     </div>
   `
+  
+  // Add command buttons to tasks after the HTML is rendered
+  setTimeout(() => addCommandButtonsToTasks(spec), 0)
+}
+
+// Add command buttons to task items
+function addCommandButtonsToTasks(spec) {
+  if (!spec.tasks) return
+  
+  // Available commands for tasks
+  const availableCommands = ['execute-task', 'fix', 'tweak', 'check-task']
+  
+  spec.tasks.forEach(task => {
+    const taskActionsContainer = document.querySelector(`[data-task-id="${task.id}"].task-actions`)
+    if (!taskActionsContainer) return
+    
+    // Clear existing buttons
+    taskActionsContainer.innerHTML = ''
+    
+    // Create command button group
+    const buttonGroup = createCommandButtonGroup(task, availableCommands)
+    taskActionsContainer.appendChild(buttonGroup)
+  })
+  
+  // Set up command click handler
+  setupCommandClickHandler(spec)
+}
+
+// Set up command click event handling
+function setupCommandClickHandler(spec) {
+  document.addEventListener('command-click', (e) => {
+    const { command, taskData } = e.detail
+    handleCommandExecution(command, taskData, spec)
+  })
+}
+
+// Handle command execution
+function handleCommandExecution(command, taskData, spec) {
+  console.log(`Executing command: ${command} for task: ${taskData.id}`)
+  
+  // TODO: This will be implemented in EXEC-003 and EXEC-005
+  // For now, just show an alert
+  alert(`Command "${command}" will be executed for task "${taskData.id}".\n\nThis functionality will be implemented in the next tasks.`)
 }
