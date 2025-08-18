@@ -1,7 +1,6 @@
 import { createModal, setupModalClose, escapeHtml } from '../../utils/dom.js'
 
-// Import Tauri API
-const { invoke } = window.__TAURI__.core
+// Tauri API will be accessed at runtime
 
 /**
  * Execution Modal Component
@@ -56,7 +55,7 @@ export class ExecutionModal {
         </div>
         
         <!-- Progress Section -->
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
           <div class="flex items-center gap-3 mb-2">
             <div class="execution-status text-sm font-medium text-gray-700 dark:text-gray-300">Initializing...</div>
           </div>
@@ -73,7 +72,7 @@ export class ExecutionModal {
         </div>
         
         <!-- Footer -->
-        <div class="execution-footer p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex items-center justify-between">
+        <div class="execution-footer p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex items-center justify-between">
           <div class="text-xs text-gray-500 dark:text-gray-400">
             Command: <code class="bg-gray-200 dark:bg-gray-600 px-1 rounded">${this.command}</code>
           </div>
@@ -156,17 +155,37 @@ export class ExecutionModal {
   async execute() {
     if (this.isExecuting) return
     
+    console.log('ExecutionModal.execute() called with:', {
+      command: this.command,
+      taskData: this.taskData,
+      specData: this.specData,
+      projectPath: this.projectPath
+    })
+    
     this.isExecuting = true
     this.updateStatus('Executing...', 'executing')
     this.updateProgress(10)
     this.appendOutput(`Starting execution of command: ${this.command}\n`, 'info')
     
     try {
+      // Get invoke from global scope
+      let invoke
+      if (window.__TAURI__ && window.__TAURI__.core) {
+        invoke = window.__TAURI__.core.invoke;
+      }
+      
+      if (!invoke) {
+        throw new Error('Tauri API not available');
+      }
+      
       // Build command arguments based on command type and task data
       const commandArgs = this.buildCommandArgs()
       
       this.updateProgress(25)
       this.appendOutput(`Command arguments: ${commandArgs.join(' ')}\n`, 'info')
+      this.appendOutput(`Task ID: ${this.taskData.id}\n`, 'info')
+      this.appendOutput(`Spec path: ${this.specData.path || 'Not provided'}\n`, 'info')
+      this.appendOutput(`Project path: ${this.projectPath || 'Not provided'}\n`, 'info')
       
       // Execute the command via Tauri
       this.updateProgress(50)
@@ -385,8 +404,16 @@ export function openExecutionModal(command, taskData = {}, specData = {}, projec
   })
   
   // Auto-start execution after a brief delay
-  setTimeout(() => {
-    modal.execute()
+  console.log('Setting up auto-execution for modal:', { command, taskData, specData, projectPath })
+  setTimeout(async () => {
+    console.log('Auto-execution timeout triggered')
+    try {
+      await modal.execute()
+    } catch (error) {
+      console.error('Auto-execution failed:', error)
+      modal.appendOutput(`❌ Failed to start execution: ${error.message}\n`, 'error')
+      modal.updateStatus('Failed to start', 'error')
+    }
   }, 500)
   
   return modal
