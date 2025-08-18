@@ -1,0 +1,35 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon
+Icon?
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+
+# macOS metadata
+.com.apple.timemachine.donotpresent
+
+# Local git config
+.gitconfig
+
+# Node modules (if using JS/TS)
+node_modules/
+
+# Logs
+*.log
+
+# Build output
+dist/
+build/
